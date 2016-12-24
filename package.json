@@ -1,0 +1,71 @@
+{
+  "name": "react-redux-feature-flag",
+  "version": "0.0.0",
+  "description": "Feature flagging made easy for React and Redux",
+  "main": "lib/index.js",
+  "author": "Unbounce",
+  "license": "MIT",
+  "repository": "github:unbounce/react-redux-feature-flag",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint --fix --ext .js src/",
+    "prebuild": "yarn test && yarn run lint",
+    "build": "rm -rf lib && babel src --out-dir lib --ignore test.js",
+    "prepublish": "yarn run prebuild && yarn run build",
+    "release": "np"
+  },
+  "dependencies": {
+    "react": "^15.4.1",
+    "react-redux": "^5.0.1",
+    "redux": "^3.6.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.18.2",
+    "babel-eslint": "^7.1.1",
+    "babel-plugin-transform-object-rest-spread": "^6.19.0",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-react": "^6.16.0",
+    "enzyme": "^2.6.0",
+    "eslint": "^3.11.1",
+    "eslint-config-airbnb-base": "^10.0.1",
+    "eslint-plugin-flowtype": "^2.29.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-react": "^6.8.0",
+    "jest": "^17.0.3",
+    "np": "^2.10.1",
+    "react-addons-test-utils": "^15.4.1",
+    "react-dom": "^15.4.1"
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "react"
+    ],
+    "plugins": [
+      "transform-object-rest-spread"
+    ]
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "extends": [
+      "airbnb-base",
+      "plugin:react/recommended"
+    ],
+    "plugins": [
+      "react"
+    ],
+    "env": {
+      "browser": true,
+      "jest": true
+    },
+    "rules": {
+      "arrow-parens": ["error", "as-needed"],
+      "quotes": ["error", "backtick"],
+      "object-curly-spacing": ["error", "never"],
+      "array-bracket-spacing": ["error", "never"],
+      "no-underscore-dangle": 0,
+      "import/no-extraneous-dependencies": 0
+    }
+  }
+}
