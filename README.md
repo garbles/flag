@@ -10,7 +10,7 @@ flags in an application, they should be __VERY__ easy to add and remove. That me
 boiler plate and no need to pass boolean props down through component hierarchy. Such could be
 done with global variables; however, they live outside of the React/Redux lifecycle, making them
 more difficult to control. Instead, this library injects and then accesses feature flags directly
-from the application Redux store.
+from the application Redux store without getting in your way.
 
 ## Getting Started
 
