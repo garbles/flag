@@ -1,6 +1,6 @@
 {
   "name": "react-redux-feature-flag",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Feature flagging made easy for React and Redux",
   "main": "lib/index.js",
   "author": "Unbounce",
@@ -60,10 +60,22 @@
       "jest": true
     },
     "rules": {
-      "arrow-parens": ["error", "as-needed"],
-      "quotes": ["error", "backtick"],
-      "object-curly-spacing": ["error", "never"],
-      "array-bracket-spacing": ["error", "never"],
+      "arrow-parens": [
+        "error",
+        "as-needed"
+      ],
+      "quotes": [
+        "error",
+        "backtick"
+      ],
+      "object-curly-spacing": [
+        "error",
+        "never"
+      ],
+      "array-bracket-spacing": [
+        "error",
+        "never"
+      ],
       "no-underscore-dangle": 0,
       "import/no-extraneous-dependencies": 0
     }
