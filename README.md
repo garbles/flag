@@ -123,7 +123,7 @@ render | (val: any) => ReactElement | false | The render function is the flag is
 fallbackRender | (val: any) => ReactElement | false | The render function is the flag is __falsy__
 
 ```js
-<FeatureFlag>
+<FeatureFlag
   name="flagA"
   render={(valueOfFlagA) => <TruthyFeature />}
   fallbackRender{(valueOfFlagA) => <FalsyFeature />}
