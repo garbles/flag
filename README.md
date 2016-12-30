@@ -99,7 +99,7 @@ export default function Sidebar(props) {
   return (
     <div>
       <TitleBar />
-      <FeatureFlag>
+      <FeatureFlag
         name="flagA"
         render={() => <NewSidebar {...props} />}
         fallbackRender{() => <OldSidebar {...props} />}
