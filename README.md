@@ -119,8 +119,8 @@ The main component. Requires that the store has been initialized with the
 Prop | Type | Required | Description
 --- | --- | --- | ---
 name | string | true | The name of the feature to check
-render | (val: any) => ReactElement | false | The render function is the flag is __truthy__
-fallbackRender | (val: any) => ReactElement | false | The render function is the flag is __falsy__
+render | (val: any) => ReactElement | false | The render function if the flag is __truthy__
+fallbackRender | (val: any) => ReactElement | false | The render function if the flag is __falsy__
 
 ```js
 <FeatureFlag
