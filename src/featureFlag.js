@@ -23,20 +23,20 @@ const createRefinedState = (state, flags) => {
 
   if (isImmutable(state)) {
     return state.set(STORE_KEY, member);
-  } else {
-    return {
-      ...state,
-      [STORE_KEY]: member
-    };
   }
+
+  return {
+    ...state,
+    [STORE_KEY]: member,
+  };
 };
 
 const getFlagsInternal = state => {
   if (isImmutable(state)) {
     return state.get(STORE_KEY, {});
-  } else {
-    return state[STORE_KEY] || {};
   }
+
+  return state[STORE_KEY] || {};
 };
 
 const setFlagsInternal = (state, action) => {
@@ -45,15 +45,15 @@ const setFlagsInternal = (state, action) => {
 
   if (isImmutable(state)) {
     return state.update(STORE_KEY, obj => ({...obj, flags: member}));
-  } else {
-    return {
-      ...state,
-      [STORE_KEY]: {
-        ...state[STORE_KEY],
-        flags: member
-      },
-    };
   }
+
+  return {
+    ...state,
+    [STORE_KEY]: {
+      ...state[STORE_KEY],
+      flags: member,
+    },
+  };
 };
 
 export default (opts = {}) => {
