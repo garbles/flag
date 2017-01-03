@@ -7,6 +7,55 @@ const Component = ({render, value}) => render(value);
 
 const __DEV__ = typeof process !== `undefined` && process.env.NODE_ENV !== `production`;
 
+const isImmutable = s => Boolean(s.toJS);
+
+const createRefinedState = (state, flags) => {
+  const computed = {};
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const key in flags) {
+    if (hasOwnProperty.call(flags, key) && typeof flags[key] === `function`) {
+      computed[key] = true;
+    }
+  }
+
+  const member = {computed, flags};
+
+  if (isImmutable(state)) {
+    return state.set(STORE_KEY, member);
+  } else {
+    return {
+      ...state,
+      [STORE_KEY]: member
+    };
+  }
+};
+
+const getFlagsInternal = state => {
+  if (isImmutable(state)) {
+    return state.get(STORE_KEY, {});
+  } else {
+    return state[STORE_KEY] || {};
+  }
+};
+
+const setFlagsInternal = (state, action) => {
+  const {flags} = getFlagsInternal(state);
+  const member = {...flags, ...action.payload};
+
+  if (isImmutable(state)) {
+    return state.update(STORE_KEY, obj => ({...obj, flags: member}));
+  } else {
+    return {
+      ...state,
+      [STORE_KEY]: {
+        ...state[STORE_KEY],
+        flags: member
+      },
+    };
+  }
+};
+
 export default (opts = {}) => {
   let hasOwnProperty;
   let isObject;
@@ -29,10 +78,10 @@ export default (opts = {}) => {
       return instrument({});
     }
 
-    return createStore => (reducer, initialState, enhancer) => {
+    return createStore => (reducer, initState, enhancer) => {
       const refinedReducer = (state, action) => {
         if (action.type === `@@FEATURE_FLAG/SET`) {
-          const {computed, flags} = state[STORE_KEY];
+          const {computed, flags} = getFlagsInternal(state);
 
           if (__DEV__) {
             if (!isObject(action.payload)) {
@@ -81,16 +130,7 @@ export default (opts = {}) => {
             }
           }
 
-          return {
-            ...state,
-            [STORE_KEY]: {
-              ...state[STORE_KEY],
-              flags: {
-                ...flags,
-                ...action.payload,
-              },
-            },
-          };
+          return setFlagsInternal(state, action);
         }
 
         return reducer(state, action);
@@ -105,13 +145,7 @@ export default (opts = {}) => {
         }
       }
 
-      const refinedInitialState = {
-        ...initialState,
-        [STORE_KEY]: {
-          computed,
-          flags: initFlags,
-        },
-      };
+      const refinedInitialState = createRefinedState(initState, initFlags);
 
       return createStore(
         refinedReducer,
@@ -123,7 +157,7 @@ export default (opts = {}) => {
 
   const mapStateToProps = (state, props) => {
     const {name} = props;
-    const {flags} = state[STORE_KEY] ? state[STORE_KEY] : {};
+    const {flags} = getFlagsInternal(state);
 
     if (__DEV__ && typeof flags === `undefined`) {
       warn(

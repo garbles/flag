@@ -14,11 +14,6 @@
     "prepublish": "yarn run prebuild && yarn run build",
     "release": "np"
   },
-  "dependencies": {
-    "react": "^15.4.1",
-    "react-redux": "^5.0.1",
-    "redux": "^3.6.0"
-  },
   "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-core": "^6.18.2",
@@ -32,10 +27,14 @@
     "eslint-plugin-flowtype": "^2.29.1",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-react": "^6.8.0",
+    "immutable": "^3.8.1",
     "jest": "^17.0.3",
     "np": "^2.10.1",
+    "react": "^15.4.1",
     "react-addons-test-utils": "^15.4.1",
-    "react-dom": "^15.4.1"
+    "react-dom": "^15.4.1",
+    "react-redux": "^5.0.1",
+    "redux": "^3.6.0"
   },
   "babel": {
     "presets": [
