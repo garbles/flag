@@ -15,7 +15,7 @@ from the application Redux store without getting in your way.
 ## Getting Started
 
 Wrapping any part of the application in a feature flag is easy. First, we declare the flags as
-part of the store initialization. To do it, use `FeatureFlag.instrument` which creates a Redux enchancer.
+part of the store initialization. To do it, use `FeatureFlag.instrument` which creates a Redux enhancer.
 
 ```js
 // index.js
@@ -57,7 +57,7 @@ import {FeatureFlag} from 'react-redux-feature-flag';
 const store = createStore(reducer, initialState,
   compose(
     applyMiddleware(thunk),
-    enchancer
+    enhancer
   )
 );
 ```
