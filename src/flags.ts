@@ -1,15 +1,22 @@
+import { Action } from 'redux';
 import { connect } from 'react-redux';
 import { createElement, ReactElement } from 'react';
+import { deepComputed } from 'deep-computed';
+import merge = require('lodash/merge');
 
 const SET_FLAGS = '@@FLAGS/SET_FLAGS';
 
-export type Value = string | number | boolean | IFlags | ((flags: Value) => Value) | void | null;
-export type Render = <P>(value: Value) => ReactElement<P>;
-export type FlagsReducer<S> = (state: S, action: ISetFlagsAction) => S;
+export type Render = <P>(value: Value | void) => ReactElement<P>;
+export type ResolvedValue = string | number | boolean | IResolvedFlags;
+export type Value = string | number | boolean | IFlags | ((flags: Value) => Value);
 
 export interface IFlags {
   [key: string]: Value;
 };
+
+export interface IResolvedFlags {
+  [key: string]: ResolvedValue;
+}
 
 export interface ISetFlagsAction {
   type: typeof SET_FLAGS,
@@ -24,7 +31,7 @@ interface IOwnProps {
 
 interface IComponentProps {
   render: Render;
-  value: Value;
+  value: Value | void;
 }
 
 const noopRender = () => createElement('noscript');
@@ -32,31 +39,7 @@ const noopRender = () => createElement('noscript');
 const isObject = (obj: any): obj is Object =>
   Object.prototype.toString.call(obj) === '[object Object]';
 
-const isFunction = (obj: any): obj is Function =>
-  typeof obj === 'function';
-
-function setFlags<S extends IFlags>(prev: S, next: S): S {
-  const keys: (keyof typeof next)[] = Object.keys(next);
-
-  return keys.reduce((acc, key: keyof typeof next) => {
-    const value = setFlagsValue(prev[key], next[key]);
-    return Object.assign({}, acc, { [key]: value });
-  }, prev as S);
-}
-
-function setFlagsValue(prev: Value, next: Value): Value {
-  if (!isObject(prev) && !Array.isArray(prev)) {
-    return next;
-  }
-
-  if (isFunction(prev)) {
-    return next;
-  }
-
-  return setFlags(prev as IFlags, next as IFlags);
-}
-
-function getFlag(flags: IFlags, keyPath: string): Value | null {
+function getFlag(flags: IFlags, keyPath: string): Value | void {
   const [head, ...tail] = keyPath.split('.');
   let result: Value = (flags as IFlags)[head];
 
@@ -64,7 +47,7 @@ function getFlag(flags: IFlags, keyPath: string): Value | null {
     result = (result as IFlags)[key];
 
     if (result === undefined || result === null) {
-      return null;
+      return;
     }
   }
 
@@ -75,10 +58,6 @@ const mapStateToProps =
   <S extends { flags: IFlags }>(state: S, props: IOwnProps): IComponentProps => {
     let value = getFlag(state.flags, props.name);
 
-    if (isFunction(value)) {
-      value = value(state.flags);
-    }
-
     const render = (value ? props.render : props.falsyRender) || noopRender;
 
     return {
@@ -87,11 +66,16 @@ const mapStateToProps =
     };
   };
 
-function createFlagsReducer<S extends IFlags>(initialState: S): FlagsReducer<S> {
-  // TODO watch for redux init and transform flags using setFlags (computed properties)
-  return (state = initialState, action) => {
-    if (action.type === SET_FLAGS && isObject(action.payload)) {
-      return setFlags(state, action.payload as S);
+function createFlagsReducer<S extends IFlags, C extends IResolvedFlags>(initialState: S) {
+  let prev = {} as S;
+  let next = initialState;
+  const initialComputedState = deepComputed<S, C>(initialState);
+
+  return (state: C = initialComputedState, action: Action | ISetFlagsAction): C => {
+    if (action.type === SET_FLAGS && isObject((action as ISetFlagsAction).payload)) {
+      prev = next;
+      next = merge({}, prev, (action as ISetFlagsAction).payload);
+      return deepComputed<S, C>(next);
     } else {
       return state;
     }

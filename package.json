@@ -10,6 +10,11 @@
     "test": "jest"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.64",
+    "deep-computed": "^0.0.6",
+    "lodash": "^4.17.4"
+  },
+  "peerDependencies": {
     "react": "^15.5.4",
     "react-redux": "^5.0.5",
     "redux": "^3.6.0"
@@ -20,6 +25,9 @@
     "@types/react-redux": "^4.4.40",
     "enzyme": "^2.8.2",
     "jest": "^20.0.4",
+    "react": "^15.5.4",
+    "react-redux": "^5.0.5",
+    "redux": "^3.6.0",
     "ts-jest": "^20.0.4",
     "typescript": "^2.3.3"
   },
