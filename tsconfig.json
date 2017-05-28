@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es2015",
+      "es2016",
+      "es2017",
+      "es5",
+      "es6",
+      "dom"
+    ],
+    "target": "es5",
+    "module": "commonjs",
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": false,
+    "strict": true,
+    "strictNullChecks": true,
+    "jsx": "react",
+    "pretty": true,
+    "baseUrl": "./src",
+    "types": [
+      "jest"
+    ]
+  },
+  "files": [
+    "./src/index.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

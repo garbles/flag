@@ -1,4 +1,2 @@
 src
 yarn.lock
-lib/*.test.js
-lib/*.test.jsx
