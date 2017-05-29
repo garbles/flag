@@ -1,43 +1,43 @@
-import *  as React from 'react';
-import * as PropTypes from 'prop-types';
-import { deepComputed } from 'deep-computed';
-import { Flags, Value, ResolvedFlags } from './types';
+import { deepComputed } from "deep-computed";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import { IFlags, IResolvedFlags, Value } from "./types";
 
-export interface Props {
-  flags: Flags;
-  children: React.ReactNode
+export interface IProps {
+  flags: IFlags;
+  children: React.ReactNode;
 }
 
-export interface State {
-  computed: ResolvedFlags;
+export interface IState {
+  computed: IResolvedFlags;
 }
 
-export class FlagsProvider extends React.PureComponent<Props, State> {
-  static childContextTypes = {
-    __flags: PropTypes.object.isRequired
+export class FlagsProvider extends React.PureComponent<IProps, IState> {
+  public static childContextTypes = {
+    __flags: PropTypes.object.isRequired,
   };
 
-  getChildContext() {
-    return {
-      __flags: this.state.computed
-    };
-  }
-
-  constructor(props: Props) {
+  constructor(props: IProps) {
     super();
 
     this.state = {
-      computed: deepComputed<Flags, ResolvedFlags>(props.flags),
+      computed: deepComputed<IFlags, IResolvedFlags>(props.flags),
     };
   }
 
-  componentWillReceiveProps(props: Props) {
+  public getChildContext() {
+    return {
+      __flags: this.state.computed,
+    };
+  }
+
+  public componentWillReceiveProps(props: IProps) {
     this.setState({
-      computed: deepComputed<Flags, ResolvedFlags>(props.flags)
+      computed: deepComputed<IFlags, IResolvedFlags>(props.flags),
     });
   }
 
-  render() {
+  public render() {
     const { children } = this.props;
     return children ? React.Children.only(children) : null;
   }

@@ -9,13 +9,16 @@
   "repository": "github:unbounce/react-redux-feature-flag",
   "scripts": {
     "test": "jest",
+    "lint": "tslint src/* --fix",
     "build": "rm -rf build && tsc --outDir build -d",
     "release": "np"
   },
   "dependencies": {
     "@types/prop-types": "^15.5.1",
     "deep-computed": "^0.0.6",
-    "prop-types": "^15.5.10"
+    "prop-types": "^15.5.10",
+    "tslint": "^5.3.2",
+    "tslint-react": "^3.0.0"
   },
   "peerDependencies": {
     "lodash": "^4.17.4",

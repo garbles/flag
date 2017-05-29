@@ -1,21 +1,21 @@
-import *  as React from 'react';
-import * as PropTypes from 'prop-types';
-import { Flags, Value } from './types';
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import { IFlags, Value } from "./types";
 
 export type Renderer = (value: Value | void) => React.ReactElement<any>;
 
-export interface Props {
+export interface IProps {
   name: string;
   render?: Renderer;
   fallbackRender?: Renderer;
 }
 
-function getFlag(flags: Flags, keyPath: string): Value | void {
-  const [head, ...tail] = keyPath.split('.');
-  let result: Value = (flags as Flags)[head];
+function getFlag(flags: IFlags, keyPath: string): Value | void {
+  const [head, ...tail] = keyPath.split(".");
+  let result: Value = (flags as IFlags)[head];
 
-  for (let key of tail) {
-    result = (result as Flags)[key];
+  for (const key of tail) {
+    result = (result as IFlags)[key];
 
     if (result === undefined || result === null) {
       return;
@@ -25,16 +25,16 @@ function getFlag(flags: Flags, keyPath: string): Value | void {
   return result;
 }
 
-export class Flag extends React.Component<Props, {}> {
-  static contextTypes = {
-    __flags: PropTypes.object.isRequired
+export class Flag extends React.Component<IProps, {}> {
+  public static contextTypes = {
+    __flags: PropTypes.object.isRequired,
   };
 
-  render() {
+  public render() {
     const { fallbackRender, name, render } = this.props;
     const value = getFlag(this.context.__flags, name);
     const renderer = (Boolean(value) ? render : fallbackRender) || null;
 
-    return (typeof renderer === 'function') ? renderer(value) : null;
+    return (typeof renderer === "function") ? renderer(value) : null;
   }
 }

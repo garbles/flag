@@ -1,11 +1,11 @@
-export type Value = string | number | boolean | Flags | ((flags: Value) => Value);
+export type Value = string | number | boolean | IFlags | ((flags: IResolvedFlags) => Value);
 
-export interface Flags {
+export interface IFlags {
   [key: string]: Value;
-};
+}
 
-export type ResolvedValue = string | number | boolean | ResolvedFlags;
+export type ResolvedValue = string | number | boolean | IResolvedFlags;
 
-export interface ResolvedFlags {
+export interface IResolvedFlags {
   [key: string]: ResolvedValue;
 }
