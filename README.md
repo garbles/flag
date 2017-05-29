@@ -74,7 +74,9 @@ const instance = (
       />
     </div>
   </Provider>
-)
+);
+
+React.render(instance, document.querySelector('#app'));
 ```
 
 ## API
