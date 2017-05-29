@@ -16,15 +16,13 @@ done with global variables; however, they live outside of the React/Redux lifecy
 more difficult to control. Instead, this library injects and then accesses feature flags directly
 from the application Redux store without getting in your way.
 
-
 ## Getting Started
 
-Wrapping any part of the application in a feature flag is easy. First, we declare a flags top-level key as part of our reducer.
+Flag allows you to declare flags as either plain values or as functions. If a flag is a function then it is referred to as a computed
+flag. The function accepts one argument which is the flags object itself. You do not have to use computed flags, but they can be very convenient.
+For example:
 
 ```js
-import { createStore, combineReducers } from 'redux';
-import { createFlagsReducer } from 'flag';
-
 const flags = {
   // properties can be nested objects
   features: {
@@ -41,26 +39,45 @@ const flags = {
   // they can be computed
   coolAndDude: flags => flags.cool + flags.dude,
   // they can be computed from other computed properties.
+  // other computed properties are resolved for you, so that you do not
+  // need to call it as a function.
   largeCoolAndDude: flags => flags.coolAndDude > 10
 };
-
-const reducer = combineReducer({
-  flags: createFlagsReducer(flags)
-});
-
-const store = createStore(reducer);
 ```
 
-After creating the store, just use the `Flag` component anywhere in the app
-hierarchy by specifying which key to check and what to do in both the truthy and falsy
-cases.
+Notice that computed flags nested in other flags (e.g. `flags.coolAndDude` inside `largeCoolAndDude`) is already resolved as its value. The flags object
+can then either be store in your Redux store or passed in as a prop to `FlagProvider`.
+
+## General use
+
+This library can be used with vanilla React and with React-Redux. The main component is `Flag` that specifies which flag you're checking
+and how to handle it. Use this component whenever you need to split rendering based on a flag.
 
 ```jsx
-import { Provider } from 'react-redux';
 import { Flag } from 'flag';
 
+<Flag
+  name="features.useMyCoolNewThing"
+  render={() =>
+    <div>Rendered on truthy</div>
+  }
+  fallbackRender={() =>
+    <div>Rendered on falsy</div>
+  }
+/>
+```
+
+### Use with `react`
+
+To use this with just React, we handle flags with the `FlagProvider` component which makes flags available to child through React context.
+
+```jsx
+import { FlagsProvider, Flag } from 'flag';
+
+const flags = { /*...*/ };
+
 const instance = (
-  <Provider store={store}>
+  <FlagsProvider flags={flags}>
     <div>
       This is my application.
       <Flag
@@ -73,6 +90,69 @@ const instance = (
         }
       />
     </div>
+  </FlagsProvider>
+);
+
+React.render(instance, document.querySelector('#app'));
+```
+
+### Use with `react-redux`
+
+You can alternatively keep your flags in a Redux store. The only caveat here is that they must be store on the `flags` key of your state.
+In the example below, we use `createFlagsReducer` to create the correct reducer.
+
+```js
+import { createStore, combineReducers } from 'redux';
+import { createFlagsReducer } from 'flag';
+
+const reducer = combineReducer({
+  ...myOtherReducers,
+  flags: createFlagsReducer({
+    // properties can be nested objects
+    features: {
+      // they can be boolean
+      useMyCoolNewThing: true,
+    },
+    config: {
+      // they can be strings
+      apiUrl: 'www.example.com/api',
+    },
+    // they can be numbers
+    cool: 1,
+    dude: 5,
+    // they can be computed
+    coolAndDude: flags => flags.cool + flags.dude,
+    // they can be computed from other computed properties.
+    largeCoolAndDude: flags => flags.coolAndDude > 10
+  })
+});
+
+const store = createStore(reducer);
+```
+
+After creating the store, we attach flags to the correct context by wrapping the application in `ConnectedFlagsProvider`
+which retrieves the flag state. Then the `Flag` component behaves as usual.
+
+```jsx
+import { Provider } from 'react-redux';
+import { ConnectedFlagsProvider, Flag } from 'flag';
+
+const instance = (
+  <Provider store={store}>
+    <ConnectedFlagsProvider>
+      <div>
+        This is my application.
+        <Flag
+          name="features.useMyCoolNewThing"
+          render={() =>
+            <div>Rendered on truthy</div>
+          }
+          fallbackRender={() =>
+            <div>Rendered on falsy</div>
+          }
+        />
+      </div>
+    </ConnectedFlagsProvider>
   </Provider>
 );
 
@@ -91,12 +171,39 @@ name | string | true | The name of the feature to check
 render | (val: any) => ReactElement | false | The render function if the flag is __truthy__
 fallbackRender | (val: any) => ReactElement | false | The render function if the flag is __falsy__
 
-```js
+```jsx
 <Flag
   name="flagA"
   render={(valueOfFlagA) => <TruthyFeature />}
   fallbackRender={(valueOfFlagA) => <FalsyFeature />}
 />
+```
+
+### FlagsProvider
+
+Attaches flags to the appropriate React context. Also transforms computed flags.
+
+Prop | Type | Required | Description
+--- | --- | --- | ---
+flags | Flags | true | Nested object of plain value and computed flags
+
+```jsx
+<FlagsProvider flags={{myFeature: true}}>
+  <App />
+</FlagsProvider>
+```
+
+### ConnectedFlagsProvider
+
+Same as `FlagsProvider` except flags are fetched from a Redux store which has been attached to
+React context by the React-Redux `Provider`.
+
+```jsx
+<Provider store={store}>
+  <ConnectedFlagsProvider>
+    <App />
+  </ConnectedFlagsProvider>
+</Provider>
 ```
 
 ### setFlagsAction
@@ -106,7 +213,7 @@ A dispatchable action that sets flags.
 ```js
 store.dispatch(
   setFlagsAction({
-    flagA: false
+    myFeature: false
   })
 );
 ```
@@ -128,6 +235,7 @@ const myDefaultFlags = {
 }
 
 const reducer = combineReducers({
+  ...myOtherReducers
   flags: createFlagsReducer(myDefaultFlags)
 })
 ```

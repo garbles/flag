@@ -25,16 +25,16 @@ export class FlagsProvider extends React.PureComponent<IProps, IState> {
     };
   }
 
-  public getChildContext() {
-    return {
-      __flags: this.state.computed,
-    };
-  }
-
   public componentWillReceiveProps(props: IProps) {
     this.setState({
       computed: deepComputed<IFlags, IResolvedFlags>(props.flags),
     });
+  }
+
+  public getChildContext() {
+    return {
+      __flags: this.state.computed,
+    };
   }
 
   public render() {
