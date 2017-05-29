@@ -2,7 +2,7 @@ import * as React from 'react';
 import { mount } from 'enzyme';
 import { createStore, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
-import { createFlagsReducer, setFlagsAction, Flag, Value } from './flags';
+import { createFlagsReducer, setFlagsAction, Flag, Value, FlagsProvider, ConnectedFlagsProvider } from './index';
 
 const True = () => <noscript>T</noscript>;
 const False = () => <noscript>F</noscript>;
@@ -31,7 +31,7 @@ describe('createFlagsReducer', () => {
       }
     };
 
-    const reducer = createFlagsReducer<typeof flags, typeof flags>(flags);
+    const reducer = createFlagsReducer<typeof flags>(flags);
 
     const next = reducer(flags, setFlagsAction({
       a: false,
@@ -43,55 +43,79 @@ describe('createFlagsReducer', () => {
     expect(next.a).toEqual(false);
     expect(next.b.c).toEqual(15);
   });
+});
 
-  it('uses computed flags as if they were plain values', () => {
+describe('FlagsProvider && Flag', () => {
+  it('accepts uncomputed flags as props', () => {
     type ResolvedFlags = {
-      a: number;
-      b: {
-        c: number;
-        d: number;
-        e: string;
-        f: string;
-      };
-    };
+      a: boolean;
+      b: boolean;
+      c: boolean;
+      d: boolean;
+      e: {
+        f: {
+          g: boolean;
+        }
+      }
+    }
 
-    type State = { flags: ResolvedFlags };
-
-    const defaultFlags = {
-      a: ({ b }: ResolvedFlags) => b.c,
-      b: {
-        c: 12,
-        d: ({ a, b }: ResolvedFlags) => a + b.c,
-        e: 'hello',
-        f: ({ b: { d, e } }: ResolvedFlags) => e + '!' + d
+    const flags1 = {
+      a: true,
+      b: true,
+      c: (flags: ResolvedFlags) => flags.a && true,
+      d: (flags: ResolvedFlags) => flags.b && flags.c,
+      e: {
+        f: {
+          g: (flags: ResolvedFlags) => flags.d
+        }
       }
     };
 
-    const reducer = combineReducers<State>({
-      flags: createFlagsReducer(defaultFlags)
-    });
+    let instance = mount(
+      <FlagsProvider flags={flags1}>
+        <div>
+          <Flag
+            name="e.f.g"
+            render={() => <True />}
+            fallbackRender={() => <False />}
+          />
+        </div>
+      </FlagsProvider>
+    );
 
-    const store = createStore(reducer);
+    expect(instance.find(`True`).length).toEqual(1);
+    expect(instance.find(`False`).length).toEqual(0);
 
-    store.dispatch({ type: 'UNRELATED1' });
-    store.dispatch({ type: 'UNRELATED2' });
-
-    expect(store.getState().flags.b.f).toEqual('hello!24');
-
-    store.dispatch(setFlagsAction({
-      b: {
-        c: 20
+    const flags2 = {
+      a: true,
+      b: false,
+      c: (flags: ResolvedFlags) => flags.a && true,
+      d: (flags: ResolvedFlags) => flags.b && flags.c,
+      e: {
+        f: {
+          g: (flags: ResolvedFlags) => flags.d
+        }
       }
-    }));
+    };
 
-    store.dispatch({ type: 'UNRELATED3' });
-    store.dispatch({ type: 'UNRELATED4' });
+    instance = mount(
+      <FlagsProvider flags={flags2}>
+        <div>
+          <Flag
+            name="e.f.g"
+            render={() => <True />}
+            fallbackRender={() => <False />}
+          />
+        </div>
+      </FlagsProvider>
+    );
 
-    expect(store.getState().flags.b.f).toEqual('hello!40');
+    expect(instance.find(`True`).length).toEqual(0);
+    expect(instance.find(`False`).length).toEqual(1);
   });
 });
 
-describe('Flag', () => {
+describe('ConnectedFlagsProvider && Flag', () => {
   it('fetches flag values off of state', () => {
     type ResolvedFlags = {
       a: boolean;
@@ -127,11 +151,15 @@ describe('Flag', () => {
 
     const instance = mount(
       <Provider store={store}>
-        <Flag
-          name="e.f.g"
-          render={() => <True />}
-          fallbackRender={() => <False />}
-        />
+        <ConnectedFlagsProvider>
+          <div>
+            <Flag
+              name="e.f.g"
+              render={() => <True />}
+              fallbackRender={() => <False />}
+            />
+          </div>
+        </ConnectedFlagsProvider>
       </Provider>
     );
 
@@ -180,11 +208,13 @@ describe('Flag', () => {
 
     const instance = mount(
       <Provider store={store}>
-        <Flag
-          name="b"
-          render={() => <True />}
-          fallbackRender={() => <False />}
-        />
+        <ConnectedFlagsProvider>
+          <Flag
+            name="b"
+            render={() => <True />}
+            fallbackRender={() => <False />}
+          />
+        </ConnectedFlagsProvider>
       </Provider>
     );
 
