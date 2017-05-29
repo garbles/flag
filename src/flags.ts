@@ -26,7 +26,7 @@ export interface ISetFlagsAction {
 export interface IOwnProps {
   name: string;
   render?: Render;
-  falsyRender?: Render;
+  fallbackRender?: Render;
 }
 
 interface IComponentProps {
@@ -43,7 +43,7 @@ function getFlag(flags: IFlags, keyPath: string): Value | void {
   const [head, ...tail] = keyPath.split('.');
   let result: Value = (flags as IFlags)[head];
 
-  for (let key in tail) {
+  for (let key of tail) {
     result = (result as IFlags)[key];
 
     if (result === undefined || result === null) {
@@ -58,7 +58,7 @@ const mapStateToProps =
   <S extends { flags: IFlags }>(state: S, props: IOwnProps): IComponentProps => {
     let value = getFlag(state.flags, props.name);
 
-    const render = (value ? props.render : props.falsyRender) || noopRender;
+    const render = (value ? props.render : props.fallbackRender) || noopRender;
 
     return {
       render,

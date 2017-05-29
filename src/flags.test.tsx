@@ -98,6 +98,11 @@ describe('Flag', () => {
       b: boolean;
       c: boolean;
       d: boolean;
+      e: {
+        f: {
+          g: boolean;
+        }
+      }
     }
 
     type State = {
@@ -109,7 +114,12 @@ describe('Flag', () => {
         a: true,
         b: true,
         c: (flags: ResolvedFlags) => flags.a && true,
-        d: (flags: ResolvedFlags) => flags.b && flags.c
+        d: (flags: ResolvedFlags) => flags.b && flags.c,
+        e: {
+          f: {
+            g: (flags: ResolvedFlags) => flags.d
+          }
+        }
       })
     });
 
@@ -118,9 +128,9 @@ describe('Flag', () => {
     const instance = mount(
       <Provider store={store}>
         <Flag
-          name="d"
+          name="e.f.g"
           render={() => <True />}
-          falsyRender={() => <False />}
+          fallbackRender={() => <False />}
         />
       </Provider>
     );
@@ -173,7 +183,7 @@ describe('Flag', () => {
         <Flag
           name="b"
           render={() => <True />}
-          falsyRender={() => <False />}
+          fallbackRender={() => <False />}
         />
       </Provider>
     );
