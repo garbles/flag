@@ -4,7 +4,7 @@ import { createElement, ReactElement } from 'react';
 import { deepComputed } from 'deep-computed';
 import merge = require('lodash/merge');
 
-const SET_FLAGS = '@@FLAGS/SET_FLAGS';
+export const SET_FLAGS = `@@FLAGS/SET_FLAGS`;
 
 export type Render = <P>(value: Value | void) => ReactElement<P>;
 export type ResolvedValue = string | number | boolean | IResolvedFlags;
@@ -23,10 +23,10 @@ export interface ISetFlagsAction {
   payload?: IFlags
 }
 
-interface IOwnProps {
+export interface IOwnProps {
   name: string;
-  render: Render;
-  falsyRender: Render;
+  render?: Render;
+  falsyRender?: Render;
 }
 
 interface IComponentProps {

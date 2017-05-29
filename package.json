@@ -2,19 +2,22 @@
   "name": "react-redux-feature-flag",
   "version": "0.2.0",
   "description": "Feature flagging made easy for React and Redux",
-  "main": "lib/index.ts",
+  "main": "./build/index.ts",
+  "types": "./build/index.d.ts",
   "author": "Unbounce",
   "license": "MIT",
   "repository": "github:unbounce/react-redux-feature-flag",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "rm -rf build && tsc --outDir build -d",
+    "release": "np"
   },
   "dependencies": {
     "@types/lodash": "^4.14.64",
-    "deep-computed": "^0.0.6",
-    "lodash": "^4.17.4"
+    "deep-computed": "^0.0.6"
   },
   "peerDependencies": {
+    "lodash": "^4.17.4",
     "react": "^15.5.4",
     "react-redux": "^5.0.5",
     "redux": "^3.6.0"
@@ -25,8 +28,11 @@
     "@types/react-redux": "^4.4.40",
     "enzyme": "^2.8.2",
     "jest": "^20.0.4",
+    "np": "^2.15.0",
     "react": "^15.5.4",
+    "react-dom": "^15.5.4",
     "react-redux": "^5.0.5",
+    "react-test-renderer": "^15.5.4",
     "redux": "^3.6.0",
     "ts-jest": "^20.0.4",
     "typescript": "^2.3.3"
