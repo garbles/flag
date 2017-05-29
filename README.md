@@ -51,8 +51,8 @@ const reducer = combineReducer({
 const store = createStore(reducer);
 ```
 
-Now that I've created the store, I need only use the `Flag` component anywhere in my app
-hierarchy where I can specify which key to check and what to do in both the truthy and falsy
+After creating the store, just use the `Flag` component anywhere in the app
+hierarchy by specifying which key to check and what to do in both the truthy and falsy
 cases.
 
 ```jsx
@@ -113,7 +113,7 @@ store.dispatch(
 
 ### createFlagsReducer
 
-Creates the reducer for your redux store. Accepts any plain object as an argument.
+Creates the reducer for your Redux store. Accepts any plain object as an argument.
 
 ```js
 const myDefaultFlags = {
