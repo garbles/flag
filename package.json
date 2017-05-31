@@ -1,6 +1,6 @@
 {
   "name": "flag",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Feature flagging made easy for React and Redux",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
