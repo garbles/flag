@@ -1,20 +1,17 @@
-import { deepComputed } from "deep-computed";
-import * as PropTypes from "prop-types";
-import * as React from "react";
-import { Store, Unsubscribe } from "redux";
-import { FlagsProvider } from "./flags-provider";
-import { IFlags, IResolvedFlags, Value } from "./types";
+import { deepComputed } from 'deep-computed';
+import * as React from 'react';
+import { Store, Unsubscribe } from 'redux';
+import { FlagsProvider } from './flags-provider';
+import { Flags, ResolvedFlags, Value } from './types';
 
-export interface IState {
-  flags: IFlags;
+export interface ConnectedFlagsProviderState {
+  flags: Flags;
 }
 
-export class ConnectedFlagsProvider extends React.Component<{}, IState> {
-  public static contextTypes = {
-    store: PropTypes.object,
-  };
+export class ConnectedFlagsProvider extends React.Component<{}, ConnectedFlagsProviderState> {
+  public static contextTypes = { store: () => null };
 
-  private store: Store<IState>;
+  private store: Store<ConnectedFlagsProviderState>;
   private unsubscribe: Unsubscribe;
 
   constructor() {
@@ -26,7 +23,7 @@ export class ConnectedFlagsProvider extends React.Component<{}, IState> {
   }
 
   public componentWillMount() {
-    this.store = this.context.store as Store<IState>;
+    this.store = this.context.store as Store<ConnectedFlagsProviderState>;
     this.setState({ flags: this.store.getState().flags });
 
     this.unsubscribe = this.store.subscribe(() => {

@@ -1,40 +1,59 @@
-import * as PropTypes from "prop-types";
-import * as React from "react";
-import { IFlags, Value } from "./types";
+import * as React from 'react';
+import { key } from './key';
+import { Flags, FlagChildProps, Value, Renderer } from './types';
 
-export type Renderer = (value: Value | void) => React.ReactElement<any>;
-
-export interface IProps {
+export interface FlagProps {
   name: string;
+  component?: React.ComponentType<FlagChildProps<any>>;
+  fallbackComponent?: React.ComponentType<FlagChildProps<any>>;
   render?: Renderer;
   fallbackRender?: Renderer;
+  [key: string]: any;
 }
 
-function getFlag(flags: IFlags, keyPath: string): Value | void {
-  const [head, ...tail] = keyPath.split(".");
-  let result: Value = (flags as IFlags)[head];
+function getFlag(flags: Flags, keyPath: string): Value | void {
+  const [head, ...tail] = keyPath.split('.');
+  let result: Value = (flags as Flags)[head];
 
   for (const key of tail) {
-    result = (result as IFlags)[key];
+    result = (result as Flags)[key];
 
     if (result === undefined || result === null) {
-      return;
+      return false;
     }
   }
 
   return result;
 }
 
-export class Flag extends React.Component<IProps, {}> {
-  public static contextTypes = {
-    __flags: PropTypes.object.isRequired,
-  };
+function resolve(
+  props: FlagChildProps<any>,
+  component?: React.ComponentType<FlagChildProps<any>>,
+  render?: Renderer,
+): React.ReactElement<any> | null {
+  if (component) {
+    return React.createElement(component as React.ComponentClass<FlagChildProps<any>>, props);
+  }
+
+  if (render) {
+    return render(props) as React.ReactElement<any> | null;
+  }
+
+  return null;
+}
+
+export class Flag extends React.Component<FlagProps, {}> {
+  public static contextTypes = { [key]: () => null };
 
   public render() {
-    const { fallbackRender, name, render } = this.props;
-    const value = getFlag(this.context.__flags, name);
-    const renderer = (Boolean(value) ? render : fallbackRender) || null;
+    const { name, component, render, fallbackComponent, fallbackRender, ...rest } = this.props;
+    const value = getFlag(this.context[key], name);
+    const props: FlagChildProps<any> = { ...rest, flags: { [name]: value } };
 
-    return (typeof renderer === "function") ? renderer(value) : null;
+    if (Boolean(value)) {
+      return resolve(props, component, render) || null;
+    } else {
+      return resolve(props, fallbackComponent, fallbackRender) || null;
+    }
   }
 }

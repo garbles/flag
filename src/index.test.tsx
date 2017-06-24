@@ -1,41 +1,41 @@
 // tslint:disable:jsx-no-lambda
 
-import { mount } from "enzyme";
-import * as React from "react";
-import { Provider } from "react-redux";
-import { combineReducers, createStore } from "redux";
+import { mount } from 'enzyme';
+import * as React from 'react';
+import { Provider } from 'react-redux';
+import { combineReducers, createStore } from 'redux';
 
 import {
   ConnectedFlagsProvider,
   createFlagsReducer,
   Flag,
   FlagsProvider,
-  IFlags,
-  IResolvedFlags,
+  Flags,
+  ResolvedFlags,
   setFlagsAction,
   Value,
-} from "./index";
+} from './index';
 
 const True = () => <noscript>T</noscript>;
 const False = () => <noscript>F</noscript>;
 
-describe("createFlagsReducer", () => {
-  it("creates a reducer function for flags", () => {
+describe('createFlagsReducer', () => {
+  it('creates a reducer function for flags', () => {
     const flags = {
       a: true,
       b: {
-        c: "www.example.com/api",
+        c: 'www.example.com/api',
         d: 12,
       },
     };
 
     const reducer = createFlagsReducer(flags);
 
-    expect(typeof reducer).toEqual("function");
+    expect(typeof reducer).toEqual('function');
     expect(reducer.length).toEqual(2);
   });
 
-  it("sets flags when the correct flag is dispatched", () => {
+  it('sets flags when the correct flag is dispatched', () => {
     const flags = {
       a: true,
       b: {
@@ -45,21 +45,24 @@ describe("createFlagsReducer", () => {
 
     const reducer = createFlagsReducer<typeof flags>(flags);
 
-    const next = reducer(flags, setFlagsAction({
-      a: false,
-      b: {
-        c: 15,
-      },
-    }));
+    const next = reducer(
+      flags,
+      setFlagsAction({
+        a: false,
+        b: {
+          c: 15,
+        },
+      }),
+    );
 
     expect(next.a).toEqual(false);
     expect(next.b.c).toEqual(15);
   });
 });
 
-describe("FlagsProvider && Flag", () => {
-  it("accepts uncomputed flags as props", () => {
-    interface IResolved extends IResolvedFlags {
+describe('FlagsProvider && Flag', () => {
+  it('accepts uncomputed flags as props', () => {
+    interface Resolved extends ResolvedFlags {
       a: boolean;
       b: boolean;
       c: boolean;
@@ -67,18 +70,18 @@ describe("FlagsProvider && Flag", () => {
       e: {
         f: {
           g: boolean;
-        },
+        };
       };
     }
 
-    const flags1: IFlags = {
+    const flags1: Flags = {
       a: true,
       b: true,
-      c: (flags: IResolved) => flags.a && true,
-      d: (flags: IResolved) => flags.b && flags.c,
+      c: (flags: Resolved) => flags.a && true,
+      d: (flags: Resolved) => flags.b && flags.c,
       e: {
         f: {
-          g: (flags: IResolved) => flags.d,
+          g: (flags: Resolved) => flags.d,
         },
       },
     };
@@ -86,11 +89,7 @@ describe("FlagsProvider && Flag", () => {
     let instance = mount(
       <FlagsProvider flags={flags1}>
         <div>
-          <Flag
-            name="e.f.g"
-            render={() => <True />}
-            fallbackRender={() => <False />}
-          />
+          <Flag name="e.f.g" render={() => <True />} fallbackRender={() => <False />} />
         </div>
       </FlagsProvider>,
     );
@@ -101,11 +100,11 @@ describe("FlagsProvider && Flag", () => {
     const flags2 = {
       a: true,
       b: false,
-      c: (flags: IResolved) => flags.a && true,
-      d: (flags: IResolved) => flags.b && flags.c,
+      c: (flags: Resolved) => flags.a && true,
+      d: (flags: Resolved) => flags.b && flags.c,
       e: {
         f: {
-          g: (flags: IResolved) => flags.d,
+          g: (flags: Resolved) => flags.d,
         },
       },
     };
@@ -113,11 +112,7 @@ describe("FlagsProvider && Flag", () => {
     instance = mount(
       <FlagsProvider flags={flags2}>
         <div>
-          <Flag
-            name="e.f.g"
-            render={() => <True />}
-            fallbackRender={() => <False />}
-          />
+          <Flag name="e.f.g" render={() => <True />} fallbackRender={() => <False />} />
         </div>
       </FlagsProvider>,
     );
@@ -125,11 +120,9 @@ describe("FlagsProvider && Flag", () => {
     expect(instance.find(`True`).length).toEqual(0);
     expect(instance.find(`False`).length).toEqual(1);
   });
-});
 
-describe("ConnectedFlagsProvider && Flag", () => {
-  it("fetches flag values off of state", () => {
-    interface IResolved extends IResolvedFlags {
+  it('passes flags and other props to the render function', () => {
+    interface Resolved extends ResolvedFlags {
       a: boolean;
       b: boolean;
       c: boolean;
@@ -137,23 +130,120 @@ describe("ConnectedFlagsProvider && Flag", () => {
       e: {
         f: {
           g: boolean;
-        },
+        };
       };
     }
 
-    interface IState {
-      flags: IResolved;
+    const flags: Flags = {
+      a: true,
+      b: true,
+      c: (flags: Resolved) => flags.a && true,
+      d: (flags: Resolved) => flags.b && flags.c,
+      e: {
+        f: {
+          g: (flags: Resolved) => flags.d,
+        },
+      },
+    };
+
+    expect.assertions(3);
+
+    mount(
+      <FlagsProvider flags={flags}>
+        <div>
+          <Flag
+            name="e.f.g"
+            someOtherProps="potato"
+            render={props => {
+              expect(props.flags).toBeDefined();
+              expect(props.flags['e.f.g']).toEqual(true);
+              expect(props.someOtherProps).toEqual('potato');
+              return null;
+            }}
+          />
+        </div>
+      </FlagsProvider>,
+    );
+  });
+
+  it('can render with a component', () => {
+    expect.assertions(1);
+
+    const truthyFlags: Flags = {
+      a: true,
+    };
+
+    function MyComponent(props) {
+      expect(props.flags.a).toEqual(true);
+      return null;
     }
 
-    const reducer = combineReducers<IState>({
+    function MyFallbackComponent(props) {
+      expect(true).toEqual(true);
+      expect(true).toEqual(true);
+      return null;
+    }
+
+    mount(
+      <FlagsProvider flags={truthyFlags}>
+        <Flag name="a" component={MyComponent} fallbackComponent={MyFallbackComponent} />
+      </FlagsProvider>,
+    );
+  });
+
+  it('can fallback to a component', () => {
+    expect.assertions(1);
+
+    const falsyFlags: Flags = {
+      a: false,
+    };
+
+    function MyComponent(props) {
+      expect(true).toEqual(true);
+      expect(true).toEqual(true);
+      return null;
+    }
+
+    function MyFallbackComponent(props) {
+      expect(props.flags.a).toEqual(false);
+      return null;
+    }
+
+    mount(
+      <FlagsProvider flags={falsyFlags}>
+        <Flag name="a" component={MyComponent} fallbackComponent={MyFallbackComponent} />
+      </FlagsProvider>,
+    );
+  });
+});
+
+describe('ConnectedFlagsProvider && Flag', () => {
+  it('fetches flag values off of state', () => {
+    interface Resolved extends ResolvedFlags {
+      a: boolean;
+      b: boolean;
+      c: boolean;
+      d: boolean;
+      e: {
+        f: {
+          g: boolean;
+        };
+      };
+    }
+
+    interface State {
+      flags: Resolved;
+    }
+
+    const reducer = combineReducers<State>({
       flags: createFlagsReducer({
         a: true,
         b: true,
-        c: (flags: IResolved) => flags.a && true,
-        d: (flags: IResolved) => flags.b && flags.c,
+        c: (flags: Resolved) => flags.a && true,
+        d: (flags: Resolved) => flags.b && flags.c,
         e: {
           f: {
-            g: (flags: IResolved) => flags.d,
+            g: (flags: Resolved) => flags.d,
           },
         },
       }),
@@ -165,11 +255,7 @@ describe("ConnectedFlagsProvider && Flag", () => {
       <Provider store={store}>
         <ConnectedFlagsProvider>
           <div>
-            <Flag
-              name="e.f.g"
-              render={() => <True />}
-              fallbackRender={() => <False />}
-            />
+            <Flag name="e.f.g" render={() => <True />} fallbackRender={() => <False />} />
           </div>
         </ConnectedFlagsProvider>
       </Provider>,
@@ -178,39 +264,45 @@ describe("ConnectedFlagsProvider && Flag", () => {
     expect(instance.find(`True`).length).toEqual(1);
     expect(instance.find(`False`).length).toEqual(0);
 
-    store.dispatch(setFlagsAction({
-      a: false,
-    }));
+    store.dispatch(
+      setFlagsAction({
+        a: false,
+      }),
+    );
 
     expect(instance.find(`True`).length).toEqual(0);
     expect(instance.find(`False`).length).toEqual(1);
 
-    store.dispatch(setFlagsAction({
-      a: true,
-      b: true,
-    }));
+    store.dispatch(
+      setFlagsAction({
+        a: true,
+        b: true,
+      }),
+    );
 
     expect(instance.find(`True`).length).toEqual(1);
     expect(instance.find(`False`).length).toEqual(0);
 
-    store.dispatch(setFlagsAction({
-      c: false,
-    }));
+    store.dispatch(
+      setFlagsAction({
+        c: false,
+      }),
+    );
 
     expect(instance.find(`True`).length).toEqual(0);
     expect(instance.find(`False`).length).toEqual(1);
   });
 
-  it("renders falsy when the value does not exist", () => {
-    interface IResolvedFlags {
+  it('renders falsy when the value does not exist', () => {
+    interface Resolved {
       a: boolean;
     }
 
-    interface IState {
-      flags: IResolvedFlags;
+    interface State {
+      flags: Resolved;
     }
 
-    const reducer = combineReducers<IState>({
+    const reducer = combineReducers<State>({
       flags: createFlagsReducer({
         a: true,
       }),
@@ -221,11 +313,7 @@ describe("ConnectedFlagsProvider && Flag", () => {
     const instance = mount(
       <Provider store={store}>
         <ConnectedFlagsProvider>
-          <Flag
-            name="b"
-            render={() => <True />}
-            fallbackRender={() => <False />}
-          />
+          <Flag name="b" render={() => <True />} fallbackRender={() => <False />} />
         </ConnectedFlagsProvider>
       </Provider>,
     );

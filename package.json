@@ -9,38 +9,33 @@
   "repository": "github:unbounce/flag",
   "scripts": {
     "test": "jest",
-    "lint": "tslint src/* --fix",
     "build": "rm -rf build && tsc --outDir build -d",
     "release": "np"
   },
   "dependencies": {
-    "@types/jest": "^19.2.3",
-    "@types/lodash": "^4.14.64",
-    "@types/prop-types": "^15.5.1",
-    "@types/react": "^15.0.25",
-    "@types/react-redux": "^4.4.40",
+    "@types/jest": "^20.0.2",
+    "@types/lodash": "^4.14.66",
+    "@types/react": "^15.0.31",
+    "@types/react-redux": "^4.4.45",
     "deep-computed": "^0.0.6"
   },
   "peerDependencies": {
     "lodash": "^4.17.4",
-    "prop-types": "^15.5.10",
     "react": "^15.5.4",
     "react-redux": "^5.0.5",
     "redux": "^3.6.0"
   },
   "devDependencies": {
-    "enzyme": "^2.8.2",
+    "enzyme": "^2.9.1",
     "jest": "^20.0.4",
-    "np": "^2.15.0",
-    "react": "^15.5.4",
-    "react-dom": "^15.5.4",
+    "np": "^2.16.0",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
     "react-redux": "^5.0.5",
-    "react-test-renderer": "^15.5.4",
-    "redux": "^3.6.0",
-    "ts-jest": "^20.0.4",
-    "tslint": "^5.3.2",
-    "tslint-react": "^3.0.0",
-    "typescript": "^2.3.3"
+    "react-test-renderer": "^15.6.1",
+    "redux": "^3.7.0",
+    "ts-jest": "^20.0.6",
+    "typescript": "^2.3.4"
   },
   "jest": {
     "transform": {

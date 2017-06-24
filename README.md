@@ -50,8 +50,39 @@ can then either be store in your Redux store or passed in as a prop to `FlagProv
 
 ## General use
 
-This library can be used with vanilla React and with React-Redux. The main component is `Flag` that specifies which flag you're checking
-and how to handle it. Use this component whenever you need to split rendering based on a flag.
+This library can be used with vanilla React and with React-Redux. The main component is `Flag` that specifies which flag you're checking and how to handle it. Use this component whenever you need to split rendering based on a flag.
+
+The decision trees of which component or function to call is done in the following order:
+
+- Is the flag truthy?
+  - Yes
+    - Did the developer declare a `component` prop?
+      - Yes
+        - Render an instance of that component
+        - DONE.
+      - No
+        - Did the developer declare a `render` prop?
+          - Yes
+            - Call the function and use the return.
+            - DONE.
+          - No
+            - Render `null`
+            - DONE.
+  - No
+    - Did the developer declare a `fallbackComponent` prop?
+      - Yes
+        - Render an instance of that component
+        - DONE.
+      - No
+        - Did the developer declare a `fallbackRender` prop?
+          - Yes
+            - Call the function and use the return.
+            - DONE.
+          - No
+            - Render `null`
+            - DONE.
+
+Here's an example of using `render` and `fallbackRender`, forking on `features.useMyCoolNewThing`.
 
 ```jsx
 import { Flag } from 'flag';
@@ -170,6 +201,8 @@ Prop | Type | Required | Description
 name | string | true | The name of the feature to check
 render | (val: any) => ReactElement | false | The render function if the flag is __truthy__
 fallbackRender | (val: any) => ReactElement | false | The render function if the flag is __falsy__
+component | React.ComponentType<any> | false | The component to use if the flag is __truthy__
+fallbackComponent | React.ComponentType<any> | false | The component to use if the flag is __falsy__
 
 ```jsx
 <Flag
