@@ -35,7 +35,7 @@ export class FlagsProvider extends React.PureComponent<FlagProviderProps, FlagPr
     };
   }
 
-  public render() {
+  public render(): any {
     const { children } = this.props;
     return children ? React.Children.only(children) : null;
   }
