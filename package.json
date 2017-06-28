@@ -1,6 +1,6 @@
 {
   "name": "flag",
-  "version": "2.0.2",
+  "version": "2.0.3-0",
   "description": "Feature flagging made easy for React and Redux",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
@@ -39,6 +39,10 @@
       ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": ["ts", "tsx", "js"]
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ]
   }
 }
