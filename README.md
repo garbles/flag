@@ -98,6 +98,18 @@ import { Flag } from 'flag';
 />
 ```
 
+Given that we have full components to be rendered in each path, we could also use `component` and `fallbackComponent`.
+
+```jsx
+import { Flag } from 'flag';
+
+<Flag
+  name="features.useMyCoolNewThing"
+  component={RevisedFeature}
+  fallbackComponent={ExistingFeature}
+/>
+```
+
 ### Use with `react`
 
 To use this with just React, we handle flags with the `FlagProvider` component which makes flags available to child through React context.
