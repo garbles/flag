@@ -10,6 +10,6 @@ export interface ResolvedFlags {
   [key: string]: ResolvedValue;
 }
 
-export type FlagChildProps<P, F = { [key: string]: any }> = P & { flags: F };
+export type FlagChildProps<P, F = ResolvedFlags> = P & { flags: F };
 
 export type Renderer = (props: FlagChildProps<any>) => React.ReactNode;

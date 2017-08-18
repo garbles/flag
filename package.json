@@ -13,7 +13,8 @@
     "release": "np"
   },
   "dependencies": {
-    "deep-computed": "^0.0.6"
+    "deep-computed": "^0.0.6",
+    "hoist-non-react-statics": "^2.3.0"
   },
   "peerDependencies": {
     "lodash": "^4.17.4",
@@ -21,22 +22,22 @@
   },
   "optionalDependencies": {
     "react-dom": "^15.6.1",
-    "react-redux": "^5.0.5",
-    "redux": "^3.7.1"
+    "react-redux": "^5.0.6",
+    "redux": "^3.7.2"
   },
   "devDependencies": {
-    "@types/jest": "^20.0.2",
-    "@types/lodash": "^4.14.66",
-    "@types/react": "^15.0.31",
-    "@types/react-redux": "^4.4.45",
-    "@types/redux": "^3.6.0",
+    "@types/jest": "^20.0.7",
+    "@types/lodash": "^4.14.73",
+    "@types/node": "^8.0.24",
+    "@types/react": "15.6.1",
+    "@types/react-redux": "^5.0.4",
     "enzyme": "^2.9.1",
     "jest": "^20.0.4",
     "np": "^2.16.0",
     "react": "^15.5.4",
     "react-test-renderer": "^15.6.1",
-    "ts-jest": "^20.0.6",
-    "typescript": "^2.3.4"
+    "ts-jest": "^20.0.10",
+    "typescript": "^2.4.2"
   },
   "jest": {
     "transform": {

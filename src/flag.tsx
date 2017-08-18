@@ -48,7 +48,10 @@ export class Flag extends React.Component<FlagProps, {}> {
   public render() {
     const { name, component, render, fallbackComponent, fallbackRender, ...rest } = this.props;
     const value = getFlag(this.context[key], name);
-    const props: FlagChildProps<typeof rest> = { ...rest, flags: { [name]: value } };
+    const props: FlagChildProps<typeof rest, { [key: string]: typeof value }> = {
+      ...rest,
+      flags: { [name]: value },
+    };
 
     if (Boolean(value)) {
       return resolve(props, component, render) || null;

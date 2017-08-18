@@ -14,6 +14,7 @@ import {
   ResolvedFlags,
   setFlagsAction,
   Value,
+  withFlags,
 } from './index';
 
 const True = () => <noscript>T</noscript>;
@@ -320,5 +321,65 @@ describe('ConnectedFlagsProvider && Flag', () => {
 
     expect(instance.find(`True`).length).toEqual(0);
     expect(instance.find(`False`).length).toEqual(1);
+  });
+});
+
+describe('withFlags', () => {
+  it('creates a higher order component by pulling them in', () => {
+    expect.assertions(2);
+
+    interface Resolved extends ResolvedFlags {
+      a: boolean;
+      b: boolean;
+      c: boolean;
+      d: boolean;
+      e: {
+        f: {
+          g: boolean;
+        };
+      };
+    }
+
+    interface State {
+      flags: Resolved;
+    }
+
+    const reducer = combineReducers<State>({
+      flags: createFlagsReducer({
+        a: true,
+        b: true,
+        c: (flags: Resolved) => flags.a && true,
+        d: (flags: Resolved) => flags.b && flags.c,
+        e: {
+          f: {
+            g: (flags: Resolved) => flags.d,
+          },
+        },
+      }),
+    });
+
+    const store = createStore(reducer);
+
+    type Props = {
+      flags: Resolved;
+      name: string;
+    };
+
+    const Component = ({ name, flags }: Props) => {
+      expect(name).toEqual('neato');
+      expect(flags.e.f.g).toEqual(true);
+
+      return <div />;
+    };
+
+    const Next = withFlags<{ name: string }>(Component);
+
+    mount(
+      <Provider store={store}>
+        <ConnectedFlagsProvider>
+          <Next name="neato" />
+        </ConnectedFlagsProvider>
+      </Provider>,
+    );
   });
 });
