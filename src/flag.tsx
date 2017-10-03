@@ -48,15 +48,21 @@ export class Flag extends React.Component<FlagProps, {}> {
   public render() {
     const { name, component, render, fallbackComponent, fallbackRender, ...rest } = this.props;
     const value = getFlag(this.context[key], name);
+    const isEnabled = Boolean(value);
+
     const props: FlagChildProps<typeof rest, { [key: string]: typeof value }> = {
       ...rest,
       flags: { [name]: value },
     };
 
-    if (Boolean(value)) {
-      return resolve(props, component, render) || null;
-    } else {
-      return resolve(props, fallbackComponent, fallbackRender) || null;
+    if (isEnabled && props.children) {
+      return props.children;
     }
+
+    if (isEnabled) {
+      return resolve(props, component, render) || null;
+    }
+
+    return resolve(props, fallbackComponent, fallbackRender) || null;
   }
 }

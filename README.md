@@ -56,25 +56,30 @@ The decision trees of which component or function to call is done in the followi
 
 - Is the flag truthy?
   - Yes
-    - Did the developer declare a `component` prop?
+    - Does the component have a child(ren)?
       - Yes
-        - Render an instance of that component
+        - Render the child(ren)
         - DONE.
       - No
-        - Did the developer declare a `render` prop?
+        - Does the component have a `component` prop?
           - Yes
-            - Call the function and use the return.
+            - Render an instance of that component
             - DONE.
           - No
-            - Render `null`
-            - DONE.
+            - Does the component have a `render` prop?
+              - Yes
+                - Call the function and use the return.
+                - DONE.
+              - No
+                - Render `null`
+                - DONE.
   - No
-    - Did the developer declare a `fallbackComponent` prop?
+    - Does the component have a `fallbackComponent` prop?
       - Yes
         - Render an instance of that component
         - DONE.
       - No
-        - Did the developer declare a `fallbackRender` prop?
+        - Does the component have a `fallbackRender` prop?
           - Yes
             - Call the function and use the return.
             - DONE.
@@ -109,6 +114,18 @@ import { Flag } from 'flag';
   fallbackComponent={ExistingFeature}
 />
 ```
+
+If you don't care about the fallback case - render nothing if false - then you can also render your component inline as children.
+
+
+```jsx
+import { Flag } from 'flag';
+
+<Flag name="features.useMyCoolNewThing">
+  <RevisedFeature />
+</Flag>
+```
+
 
 ### Use with `react`
 
@@ -211,6 +228,7 @@ The main React component.
 Prop | Type | Required | Description
 --- | --- | --- | ---
 name | string | true | The name of the feature to check
+children | React.ReactElement<any> | false | The rendered result if the flag is __truthy__
 render | (val: any) => ReactElement | false | The render function if the flag is __truthy__
 fallbackRender | (val: any) => ReactElement | false | The render function if the flag is __falsy__
 component | React.ComponentType<any> | false | The component to use if the flag is __truthy__

@@ -216,6 +216,69 @@ describe('FlagsProvider && Flag', () => {
       </FlagsProvider>,
     );
   });
+
+  it('can render children if they are provided present and flag is truthy', () => {
+    expect.assertions(4);
+
+    const flags: Flags = {
+      a: 500,
+    };
+
+    function MyComponent() {
+      expect(true).toEqual(true);
+      return null;
+    }
+
+    mount(
+      <FlagsProvider flags={flags}>
+        <div>
+          <Flag name="a">
+            <MyComponent />
+          </Flag>
+          <Flag name="a">
+            <MyComponent />
+          </Flag>
+          <Flag name="a">
+            <MyComponent />
+          </Flag>
+          <Flag name="a">
+            <MyComponent />
+          </Flag>
+        </div>
+      </FlagsProvider>,
+    );
+  });
+
+  it('can render nothing if children are provided but flags are falsy', () => {
+    expect.assertions(1);
+
+    const flags: Flags = {
+      a: false,
+      b: true,
+      c: '',
+    };
+
+    function MyComponent() {
+      expect(true).toEqual(true);
+      return null;
+    }
+
+    mount(
+      <FlagsProvider flags={flags}>
+        <div>
+          <Flag name="a">
+            <MyComponent />
+          </Flag>
+          <Flag name="b">
+            <MyComponent />
+          </Flag>
+          <Flag name="c">
+            <MyComponent />
+          </Flag>
+        </div>
+      </FlagsProvider>,
+    );
+  });
 });
 
 describe('ConnectedFlagsProvider && Flag', () => {
@@ -233,10 +296,12 @@ describe('ConnectedFlagsProvider && Flag', () => {
     }
 
     interface State {
+      hello: boolean;
       flags: Resolved;
     }
 
     const reducer = combineReducers<State>({
+      hello: (state = true) => state,
       flags: createFlagsReducer({
         a: true,
         b: true,
