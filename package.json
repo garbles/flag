@@ -10,6 +10,7 @@
   "scripts": {
     "test": "jest",
     "build": "rm -rf build && tsc --outDir build -d",
+    "prepublish": "build",
     "release": "np"
   },
   "dependencies": {
