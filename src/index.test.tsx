@@ -336,6 +336,8 @@ describe('ConnectedFlagsProvider && Flag', () => {
       }),
     );
 
+    instance.update();
+
     expect(instance.find(`True`).length).toEqual(0);
     expect(instance.find(`False`).length).toEqual(1);
 
@@ -346,6 +348,8 @@ describe('ConnectedFlagsProvider && Flag', () => {
       }),
     );
 
+    instance.update();
+
     expect(instance.find(`True`).length).toEqual(1);
     expect(instance.find(`False`).length).toEqual(0);
 
@@ -354,6 +358,8 @@ describe('ConnectedFlagsProvider && Flag', () => {
         c: false,
       }),
     );
+
+    instance.update();
 
     expect(instance.find(`True`).length).toEqual(0);
     expect(instance.find(`False`).length).toEqual(1);

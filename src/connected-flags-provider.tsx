@@ -14,8 +14,8 @@ export class ConnectedFlagsProvider extends React.Component<{}, ConnectedFlagsPr
   private store: Store<ConnectedFlagsProviderState>;
   private unsubscribe: Unsubscribe;
 
-  constructor() {
-    super();
+  constructor(props: {}) {
+    super(props);
 
     this.state = {
       flags: {},
@@ -39,10 +39,6 @@ export class ConnectedFlagsProvider extends React.Component<{}, ConnectedFlagsPr
     const { children } = this.props;
     const { flags } = this.state;
 
-    return (
-      <FlagsProvider flags={flags}>
-        {children}
-      </FlagsProvider>
-    );
+    return <FlagsProvider flags={flags}>{children}</FlagsProvider>;
   }
 }
