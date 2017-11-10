@@ -10,19 +10,17 @@
   "scripts": {
     "test": "jest",
     "build": "rm -rf build && tsc --outDir build -d",
-    "prepublish": "build",
+    "prepublish": "npm run build",
     "release": "np"
   },
   "dependencies": {
     "deep-computed": "^0.0.6",
-    "hoist-non-react-statics": "^2.3.0"
-  },
-  "peerDependencies": {
+    "hoist-non-react-statics": "^2.3.0",
     "lodash": "^4.17.4",
-    "react": "^15.5.4"
+    "react": "^16.1.0"
   },
   "optionalDependencies": {
-    "react-dom": "^15.6.1",
+    "react-dom": "^16.1.0",
     "react-redux": "^5.0.6",
     "redux": "^3.7.2"
   },
@@ -30,13 +28,13 @@
     "@types/jest": "^20.0.7",
     "@types/lodash": "^4.14.73",
     "@types/node": "^8.0.24",
-    "@types/react": "15.6.1",
+    "@types/react": "^16.0.18",
     "@types/react-redux": "^5.0.4",
-    "enzyme": "^2.9.1",
+    "enzyme": "^3.1.0",
+    "enzyme-adapter-react-16": "^1.0.2",
     "jest": "^20.0.4",
     "np": "^2.16.0",
-    "react": "^15.5.4",
-    "react-test-renderer": "^15.6.1",
+    "react-test-renderer": "^16.1.0",
     "ts-jest": "^20.0.10",
     "typescript": "^2.4.2"
   },
@@ -49,6 +47,9 @@
       "ts",
       "tsx",
       "js"
+    ],
+    "setupFiles": [
+      "<rootDir>/test/setup.js"
     ]
   }
 }

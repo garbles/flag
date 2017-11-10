@@ -16,7 +16,7 @@ export class FlagsProvider extends React.PureComponent<FlagProviderProps, FlagPr
   public static childContextTypes = { [key]: () => null };
 
   constructor(props: FlagProviderProps) {
-    super();
+    super(props);
 
     this.state = {
       computed: deepComputed<Flags, ResolvedFlags>(props.flags),
