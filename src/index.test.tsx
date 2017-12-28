@@ -13,6 +13,7 @@ import {
   Flags,
   ResolvedFlags,
   setFlagsAction,
+  replaceFlagsAction,
   Value,
   withFlags,
 } from './index';
@@ -49,14 +50,36 @@ describe('createFlagsReducer', () => {
     const next = reducer(
       flags,
       setFlagsAction({
-        a: false,
         b: {
           c: 15,
         },
       }),
     );
 
-    expect(next.a).toEqual(false);
+    expect(next.a).toEqual(true);
+    expect(next.b.c).toEqual(15);
+  });
+
+  it('replaces flags when the correct flag is dispatched', () => {
+    const flags = {
+      a: true,
+      b: {
+        c: 12,
+      },
+    };
+
+    const reducer = createFlagsReducer<typeof flags>(flags);
+
+    const next = reducer(
+      flags,
+      replaceFlagsAction({
+        b: {
+          c: 15,
+        },
+      }),
+    );
+
+    expect(next.a).toEqual(undefined);
     expect(next.b.c).toEqual(15);
   });
 });
