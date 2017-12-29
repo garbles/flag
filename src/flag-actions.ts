@@ -4,7 +4,7 @@ export const SET_FLAGS = `@@FLAGS/SET_FLAGS`;
 export const REPLACE_FLAGS = `@@FLAGS/REPLACE_FLAGS`;
 
 export interface IReplaceFlagsAction {
-  type: typeof SET_FLAGS;
+  type: typeof REPLACE_FLAGS;
   payload: Flags;
 }
 

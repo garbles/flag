@@ -14,8 +14,8 @@ export const createFlagsReducer = <S extends Flags>(initialState: S) => (
 
   if (action.type === SET_FLAGS && isPlainObject(payload)) {
     return merge<S, S, S>({} as S, state as S, payload as S);
-  } else if (action.type === REPLACE_FLAGS && isPlainObject(payload) {
-    return payload;
+  } else if (action.type === REPLACE_FLAGS && isPlainObject(payload)) {
+    return payload as S;
   } else {
     return state;
   }
