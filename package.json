@@ -4,9 +4,9 @@
   "description": "Feature flagging made easy for React and Redux",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
-  "author": "Unbounce",
+  "author": "Gabe Scholz",
   "license": "MIT",
-  "repository": "github:unbounce/flag",
+  "repository": "github:garbles/flag",
   "scripts": {
     "test": "jest",
     "build": "rm -rf build && tsc --outDir build -d",
@@ -43,13 +43,7 @@
       ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
-    "setupFiles": [
-      "<rootDir>/test/setup.js"
-    ]
+    "moduleFileExtensions": ["ts", "tsx", "js"],
+    "setupFiles": ["<rootDir>/test/setup.js"]
   }
 }
