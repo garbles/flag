@@ -279,6 +279,46 @@ describe('FlagsProvider && Flag', () => {
       </FlagsProvider>,
     );
   });
+
+  it('can render nothing if nested flags don\'t exist', () => {
+    expect.assertions(1);
+
+    const flags: Flags = {
+      a: {
+        someProp: {
+          flag: true
+        }
+      },
+      b: {
+        someProp: true
+      },
+      c: true,
+    };
+
+    function MyComponent() {
+      expect(true).toEqual(true);
+      return null;
+    }
+
+    mount(
+      <FlagsProvider flags={flags}>
+        <div>
+          <Flag name="a.someProp.flag">
+            <MyComponent />
+          </Flag>
+          <Flag name="b.someProp.flag">
+            <MyComponent />
+          </Flag>
+          <Flag name="c.someProp.flag">
+            <MyComponent />
+          </Flag>
+          <Flag name="d.someProp.flag">
+            <MyComponent />
+          </Flag>
+        </div>
+      </FlagsProvider>,
+    );
+  });
 });
 
 describe('ConnectedFlagsProvider && Flag', () => {

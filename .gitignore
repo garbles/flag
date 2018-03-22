@@ -31,6 +31,3 @@ node_modules
 *.swo
 *.swp
 *.swn
-
-# compiled
-build
