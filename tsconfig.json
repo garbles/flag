@@ -12,7 +12,6 @@
     "module": "commonjs",
     "sourceMap": true,
     "allowSyntheticDefaultImports": false,
-    "strict": true,
     "strictNullChecks": true,
     "jsx": "react",
     "pretty": true,

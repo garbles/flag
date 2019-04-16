@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { key } from './key';
 import { Flags, FlagChildProps, Value, Renderer } from './types';
-
+const get = require('lodash/get');
 export interface FlagProps {
   name: string;
   component?: React.ComponentType<FlagChildProps<any>>;
@@ -12,18 +12,8 @@ export interface FlagProps {
 }
 
 function getFlag(flags: Flags, keyPath: string): Value | void {
-  const [head, ...tail] = keyPath.split('.');
-  let result: Value = (flags as Flags)[head];
 
-  for (const key of tail) {
-    result = (result as Flags)[key];
-
-    if (result === undefined || result === null) {
-      return false;
-    }
-  }
-
-  return result;
+  return get(flags, keyPath, false);
 }
 
 function resolve(

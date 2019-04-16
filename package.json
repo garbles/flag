@@ -16,7 +16,7 @@
   "dependencies": {
     "deep-computed": "^0.0.6",
     "hoist-non-react-statics": "^2.3.0",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.11",
     "react": "^16.1.0"
   },
   "optionalDependencies": {
@@ -43,7 +43,13 @@
       ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": ["ts", "tsx", "js"],
-    "setupFiles": ["<rootDir>/test/setup.js"]
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "setupFiles": [
+      "<rootDir>/test/setup.js"
+    ]
   }
 }
