@@ -33,7 +33,7 @@ export type ConsumerProps<T> =
 export type CreateFlags<T> = {
   FlagsProvider: React.ComponentType<ProviderProps<T>>;
   Flag: React.ComponentType<ConsumerProps<T>>;
-  useFlag<KP extends KeyPath<T>>(keyPath: KP): KeyPathValue<T, KP>;
+  useFlag<KP extends KeyPath<T>>(keyPath: KP): false | KeyPathValue<T, KP>;
   useFlags(): T;
 };
 
@@ -56,12 +56,18 @@ export function createFlags<T>(): CreateFlags<T> {
 
   const useFlags = () => useContext(Context);
 
-  const useFlag = <KP extends KeyPath<T>>(keyPath: KP): KeyPathValue<T, KP> => {
+  const useFlag = <KP extends KeyPath<T>>(
+    keyPath: KP
+  ): false | KeyPathValue<T, KP> => {
     const flags = useFlags();
     let result: any = flags;
 
     for (let next of keyPath as string[]) {
       result = result[next];
+
+      if (result === undefined) {
+        return false;
+      }
     }
 
     return result;
