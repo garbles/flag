@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import shallowEqual from "shallowequal";
 import { deepComputed, Computable } from "deep-computed";
 import { KeyPath, KeyPathValue } from "useful-types";
+import { isObject } from "./utils";
 
 export type ProviderProps<T> = {
   flags: Computable<T>;
@@ -33,7 +34,7 @@ export type ConsumerProps<T> =
 export type CreateFlags<T> = {
   FlagsProvider: React.ComponentType<ProviderProps<T>>;
   Flag: React.ComponentType<ConsumerProps<T>>;
-  useFlag<KP extends KeyPath<T>>(keyPath: KP): false | KeyPathValue<T, KP>;
+  useFlag<KP extends KeyPath<T>>(keyPath: KP): KeyPathValue<T, KP>;
   useFlags(): T;
 };
 
@@ -56,18 +57,19 @@ export function createFlags<T>(): CreateFlags<T> {
 
   const useFlags = () => useContext(Context);
 
-  const useFlag = <KP extends KeyPath<T>>(
-    keyPath: KP
-  ): false | KeyPathValue<T, KP> => {
+  const useFlag = <KP extends KeyPath<T>>(keyPath: KP): KeyPathValue<T, KP> => {
     const flags = useFlags();
     let result: any = flags;
 
     for (let next of keyPath as string[]) {
-      result = result[next];
-
-      if (result === undefined) {
-        return false;
+      /**
+       * This trap is unreachable in TypeScript.
+       */
+      if (isObject(result) && !(next in result)) {
+        return undefined as any;
       }
+
+      result = result[next];
     }
 
     return result;

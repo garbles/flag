@@ -3,6 +3,7 @@ import merge from "lodash/merge";
 import { Computable } from "deep-computed";
 import { ProviderProps } from "./create-flags";
 import { connect } from "react-redux";
+import { isObject } from "./utils";
 
 type SetFlagsAction<T> = {
   type: `@@FLAG/SET_FLAGS`;
@@ -11,15 +12,11 @@ type SetFlagsAction<T> = {
 
 const MERGE_FLAGS_ACTION_TYPE = `@@FLAG/SET_FLAGS`;
 
-function isPlainObject(obj: any): obj is Object {
-  return Object.prototype.toString.call(obj) === "[object Object]";
-}
-
 function isSetFlagsAction<T>(obj: any): obj is SetFlagsAction<T> {
   return (
-    isPlainObject(obj) &&
+    isObject(obj) &&
     obj.type === MERGE_FLAGS_ACTION_TYPE &&
-    isPlainObject(obj.payload)
+    isObject(obj.payload)
   );
 }
 
