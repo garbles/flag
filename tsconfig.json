@@ -1,31 +1,13 @@
 {
   "compilerOptions": {
-    "lib": [
-      "es2015",
-      "es2016",
-      "es2017",
-      "es5",
-      "es6",
-      "dom"
-    ],
+    "lib": ["es2015"],
     "target": "es5",
     "module": "commonjs",
-    "sourceMap": true,
-    "allowSyntheticDefaultImports": false,
     "strict": true,
-    "strictNullChecks": true,
     "jsx": "react",
-    "pretty": true,
-    "baseUrl": "./src",
-    "types": [
-      "node",
-      "jest"
-    ]
+    "esModuleInterop": true,
+    "outDir": "build",
+    "declaration": true
   },
-  "files": [
-    "./src/index.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "files": ["src/index.ts", "src/create-redux-bindings.ts"]
 }

@@ -2,6 +2,7 @@
 logs
 *.log
 npm-debug.log*
+yarn-error.log
 
 # Runtime data
 pids
@@ -32,5 +33,5 @@ node_modules
 *.swp
 *.swn
 
-# compiled
+# build
 build

@@ -2,48 +2,53 @@
   "name": "flag",
   "version": "3.0.0-1",
   "description": "Feature flagging made easy for React and Redux",
-  "main": "./build/index.js",
-  "types": "./build/index.d.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "repository": "https://github.com/garbles/flag",
   "author": "Gabe Scholz",
-  "license": "MIT",
-  "repository": "github:garbles/flag",
-  "scripts": {
-    "test": "jest",
-    "build": "rm -rf build && tsc --outDir build -d",
-    "prepublish": "npm run build",
-    "release": "np"
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "@types/enzyme": "^3.9.1",
+    "@types/jest": "^24.0.11",
+    "@types/lodash": "^4.14.123",
+    "@types/react": "^16.8.12",
+    "@types/react-dom": "^16.8.3",
+    "@types/react-redux": "^7.0.7",
+    "@types/redux": "^3.6.0",
+    "@types/shallowequal": "^1.1.1",
+    "enzyme": "^3.9.0",
+    "enzyme-adapter-react-16": "^1.12.1",
+    "jest": "^24.7.1",
+    "np": "^4.0.2",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-redux": "^7.0.2",
+    "ts-jest": "^24.0.1",
+    "typescript": "3.3.4000"
   },
   "dependencies": {
-    "deep-computed": "^0.0.6",
-    "hoist-non-react-statics": "^2.3.0",
-    "lodash": "^4.17.4",
-    "react": "^16.1.0"
+    "deep-computed": "^0.1.1",
+    "lodash": "^4.17.11",
+    "shallowequal": "^1.1.0",
+    "useful-types": "^0.2.0"
+  },
+  "peerDependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6"
   },
   "optionalDependencies": {
-    "react-dom": "^16.1.0",
-    "react-redux": "^5.0.6",
-    "redux": "^3.7.2"
+    "@types/react": "^16.8.12",
+    "@types/react-dom": "^16.8.3",
+    "@types/react-redux": "^7.0.7",
+    "@types/redux": "^3.6.0",
+    "react-redux": "^7.0.2",
+    "redux": "^4.0.1"
   },
-  "devDependencies": {
-    "@types/jest": "^20.0.7",
-    "@types/lodash": "^4.14.73",
-    "@types/node": "^8.0.24",
-    "@types/react": "^16.0.18",
-    "@types/react-redux": "^5.0.4",
-    "enzyme": "^3.1.0",
-    "enzyme-adapter-react-16": "^1.0.2",
-    "jest": "^20.0.4",
-    "np": "^2.16.0",
-    "react-test-renderer": "^16.1.0",
-    "ts-jest": "^20.0.10",
-    "typescript": "^2.4.2"
-  },
-  "jest": {
-    "transform": {
-      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-    },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": ["ts", "tsx", "js"],
-    "setupFiles": ["<rootDir>/test/setup.js"]
+  "scripts": {
+    "clean": "rm -rf build",
+    "build": "tsc",
+    "prepublish": "yarn clean && yarn build",
+    "test": "jest",
+    "pub": "np"
   }
 }

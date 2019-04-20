@@ -9,29 +9,25 @@ yarn add flag
 ## Motivation
 
 Feature flagging is necessary for large client-side applications. They improve development speed
-and allow teams to test new features before they are stable. In order to __WANT__ to use feature
-flags in an application, they should be __VERY__ easy to add and remove. That means minimal
+and allow teams to test new features before they are stable. In order to **WANT** to use feature
+flags in an application, they should be **VERY** easy to add and remove. That means minimal
 boiler plate and no need to pass boolean props down through component hierarchy. Such a thing could be
 done with global variables; however, they live outside of the React/Redux lifecycle, making them
 more difficult to control. Instead, this library injects and then accesses feature flags directly
 from the React context without getting in your way.
 
-## Getting Started
+Flag allows you to declare flags as either plain values or as functions. If a flag is a function then it is referred to as a computed flag. The function accepts one argument which is the flags object itself. You do not have to use computed flags, but they can be very convenient. For example,
 
-Flag allows you to declare flags as either plain values or as functions. If a flag is a function then it is referred to as a computed
-flag. The function accepts one argument which is the flags object itself. You do not have to use computed flags, but they can be very convenient.
-For example:
-
-```js
+```ts
 const flags = {
   // properties can be nested objects
   features: {
     // they can be boolean
-    useMyCoolNewThing: true,
+    useMyCoolNewThing: true
   },
   config: {
     // they can be strings
-    apiUrl: 'www.example.com/api',
+    apiUrl: "www.example.com/api"
   },
   // they can be numbers
   cool: 1,
@@ -45,264 +41,252 @@ const flags = {
 };
 ```
 
-Notice that computed flags nested in other flags (e.g. `flags.coolAndDude` inside `largeCoolAndDude`) is already resolved as its value. The flags object
-can then either be store in your Redux store or passed in as a prop to `FlagProvider`.
+## Getting Started
 
-## General use
+This library has strong TypeScript support as of v4. In order to get that support, you must
+initialize the `flag` library before using it.
 
-This library can be used with vanilla React and with React-Redux. The main component is `Flag` that specifies which flag you're checking and how to handle it. Use this component whenever you need to split rendering based on a flag.
+### createFlags
 
-The decision trees of which component or function to call is done in the following order:
+Creates React bindings for flags. **You should only initialize one instance of this API**. Does
+not take any value arguments, but takes one type argument `T` which is the shape of your resolved
+flags.
 
-- Is the flag truthy?
-  - Yes
-    - Does the component have a child(ren)?
-      - Yes
-        - Render the child(ren)
-        - DONE.
-      - No
-        - Does the component have a `component` prop?
-          - Yes
-            - Render an instance of that component
-            - DONE.
-          - No
-            - Does the component have a `render` prop?
-              - Yes
-                - Call the function and use the return.
-                - DONE.
-              - No
-                - Render `null`
-                - DONE.
-  - No
-    - Does the component have a `fallbackComponent` prop?
-      - Yes
-        - Render an instance of that component
-        - DONE.
-      - No
-        - Does the component have a `fallbackRender` prop?
-          - Yes
-            - Call the function and use the return.
-            - DONE.
-          - No
-            - Render `null`
-            - DONE.
+```ts
+// flags.ts
 
-Here's an example of using `render` and `fallbackRender`, forking on `features.useMyCoolNewThing`.
+import createFlags from "flag";
 
-```jsx
-import { Flag } from 'flag';
+export type MyFlags = {
+  features: {
+    useMyCoolNewThing: boolean;
+  };
+  config: {
+    apiUrl: string;
+  };
+  cool: number;
+  dude: number;
+  coolAndDude: number;
+  largeCoolAndDude: boolean;
+};
 
-<Flag
-  name="features.useMyCoolNewThing"
-  render={() =>
-    <div>Rendered on truthy</div>
-  }
-  fallbackRender={() =>
-    <div>Rendered on falsy</div>
-  }
-/>
+const { FlagsProvider, Flag, useFlag, useFlags } = createFlags<MyFlags>();
+
+export { FlagsProvider, Flag, useFlag, useFlags };
 ```
 
-Given that we have full components to be rendered in each path, we could also use `component` and `fallbackComponent`.
+### createReduxBindings
 
-```jsx
-import { Flag } from 'flag';
+You can also add support for Redux by importing `createReduxBindings` from `flag/redux`.
 
-<Flag
-  name="features.useMyCoolNewThing"
-  component={RevisedFeature}
-  fallbackComponent={ExistingFeature}
-/>
+| Args       | Type               | Required | Description                       |
+| ---------- | ------------------ | -------- | --------------------------------- |
+| `provider` | `FlagsProvider<T>` | `true`   | Provider created by `createFlags` |
+
+```ts
+// flags.ts
+
+// ... the above
+
+import createReduxBindings from "flag/redux";
+
+const {
+  setFlagsAction,
+  createFlagsReducer,
+  ConnectedFlagsProvider
+} = createReduxBindings(FlagsProvider);
+
+export { setFlagsAction, createFlagsReducer, ConnectedFlagsProvider };
 ```
 
-If you don't care about the fallback case - render nothing if false - then you can also render your component inline as children.
+## React API
 
+For brevity, the type `T` in the section below refers to the shape of your resolved feature flags.
 
-```jsx
-import { Flag } from 'flag';
+### Computable
 
-<Flag name="features.useMyCoolNewThing">
-  <RevisedFeature />
-</Flag>
-```
+Generic type used to describe unresolved flags. Very useful when including functions are part of your flag definitions because function arguments can be inferred.
 
+```tsx
+import { Computable } from "flag";
 
-### Use with `react`
+type MyFlags = {
+  a: boolean;
+  b: boolean;
+  c: boolean;
+};
 
-To use this with just React, we handle flags with the `FlagProvider` component which makes flags available to child through React context.
-
-```jsx
-import { FlagsProvider, Flag } from 'flag';
-
-const flags = { /*...*/ };
-
-const instance = (
-  <FlagsProvider flags={flags}>
-    <div>
-      This is my application.
-      <Flag
-        name="features.useMyCoolNewThing"
-        render={() =>
-          <div>Rendered on truthy</div>
-        }
-        fallbackRender={() =>
-          <div>Rendered on falsy</div>
-        }
-      />
-    </div>
-  </FlagsProvider>
-);
-
-React.render(instance, document.querySelector('#app'));
-```
-
-### Use with `react-redux`
-
-You can alternatively keep your flags in a Redux store. The only caveat here is that they must be store on the `flags` key of your state.
-In the example below, we use `createFlagsReducer` to create the correct reducer.
-
-```js
-import { createStore, combineReducers } from 'redux';
-import { createFlagsReducer } from 'flag';
-
-const reducer = combineReducer({
-  ...myOtherReducers,
-  flags: createFlagsReducer({
-    // properties can be nested objects
-    features: {
-      // they can be boolean
-      useMyCoolNewThing: true,
-    },
-    config: {
-      // they can be strings
-      apiUrl: 'www.example.com/api',
-    },
-    // they can be numbers
-    cool: 1,
-    dude: 5,
-    // they can be computed
-    coolAndDude: flags => flags.cool + flags.dude,
-    // they can be computed from other computed properties.
-    largeCoolAndDude: flags => flags.coolAndDude > 10
-  })
-});
-
-const store = createStore(reducer);
-```
-
-After creating the store, we attach flags to the correct context by wrapping the application in `ConnectedFlagsProvider`
-which retrieves the flag state. Then the `Flag` component behaves as usual.
-
-```jsx
-import { Provider } from 'react-redux';
-import { ConnectedFlagsProvider, Flag } from 'flag';
-
-const instance = (
-  <Provider store={store}>
-    <ConnectedFlagsProvider>
-      <div>
-        This is my application.
-        <Flag
-          name="features.useMyCoolNewThing"
-          render={() =>
-            <div>Rendered on truthy</div>
-          }
-          fallbackRender={() =>
-            <div>Rendered on falsy</div>
-          }
-        />
-      </div>
-    </ConnectedFlagsProvider>
-  </Provider>
-);
-
-React.render(instance, document.querySelector('#app'));
-```
-
-## API
-
-### Flag
-
-The main React component.
-
-Prop | Type | Required | Description
---- | --- | --- | ---
-name | string | true | The name of the feature to check
-children | React.ReactElement<any> | false | The rendered result if the flag is __truthy__
-render | (val: any) => ReactElement | false | The render function if the flag is __truthy__
-fallbackRender | (val: any) => ReactElement | false | The render function if the flag is __falsy__
-component | React.ComponentType<any> | false | The component to use if the flag is __truthy__
-fallbackComponent | React.ComponentType<any> | false | The component to use if the flag is __falsy__
-
-```jsx
-<Flag
-  name="flagA"
-  render={(valueOfFlagA) => <TruthyFeature />}
-  fallbackRender={(valueOfFlagA) => <FalsyFeature />}
-/>
+const flags: Computable<MyFlags> = {
+  a: true,
+  b: false,
+  // 👇 `flags` type checks!
+  c: flags => flags.a && flags.b
+};
 ```
 
 ### FlagsProvider
 
-Attaches flags to the appropriate React context. Also transforms computed flags.
+Returned as part of `createFlags()`. React component that makes flags available to children through the Context API.
 
-Prop | Type | Required | Description
---- | --- | --- | ---
-flags | Flags | true | Nested object of plain value and computed flags
+| Props      | Type            | Required | Description            |
+| ---------- | --------------- | -------- | ---------------------- |
+| `flags`    | `Computable<T>` | `true`   | All pre-computed flags |
+| `children` | `ReactNode`     | `true`   | React children         |
 
-```jsx
-<FlagsProvider flags={{myFeature: true}}>
-  <App />
-</FlagsProvider>
+```tsx
+// index.tsx
+
+import { MyApplication } from "./app";
+import { FlagsProvider, Flag } from "./flags";
+
+const instance = (
+  <FlagsProvider flags={flags}>
+    <MyApplication />
+  </FlagsProvider>
+);
+
+React.render(instance, document.querySelector("#app"));
+```
+
+### Flag
+
+Returned as part of `createFlags()`. Renders a some UI based on whether a flag is truthy or falsy. It's a glorified if statement 😬. Must be used in side of `FlagsProvider`.
+
+| Props               | Type                          | Required | Description                         |
+| ------------------- | ----------------------------- | -------- | ----------------------------------- |
+| `name`              | `string[]`                    | `true`   | Must be a valid key path of `T`     |
+| `children`          | `ReactNode`                   | `false`  | React children                      |
+| `render`            | `(flags: T) => ReactNode`     | `false`  | Function that returns a `ReactNode` |
+| `fallbackRender`    | `(flags: T) => ReactNode`     | `false`  | Function that returns a `ReactNode` |
+| `component`         | `ComponentType<{ flags: T }>` | `false`  | React Component with `T` as props   |
+| `fallbackComponent` | `ComponentType<{ flags: T }>` | `false`  | React Component with `T` as props   |
+
+Order of deciding which of these nodes to renders is as follows:
+
+- If the flag is `truthy`:
+  - render `children` if defined
+  - call `render` with `T` if defined _or_
+  - call `component` with `{flags: T}` if defined _else_
+  - return `null`
+- If the flag is `falsy`:
+  - call `fallbackRender` with `T` if defined _or_
+  - call `fallbackComponent` with `{ flags: T }` if defined _else_
+  - return `null`
+
+```tsx
+<Flag
+  name={["features", "useMyCoolNewThing"]}
+  render={() => <div>Rendered on truthy</div>}
+  fallbackRender={() => <div>Rendered on falsy</div>}
+/>
+```
+
+### useFlags
+
+Returned as part of `createFlags()`. A React hook that returns all of the flags. Must be used in side of `FlagsProvider`.
+
+```tsx
+// my-component.tsx
+
+import { useFlags } from "./flags";
+
+const MyComponent = () => {
+  const flags = useFlags();
+
+  return <div>The API url is "{flags.config.apiUrl}"</div>;
+};
+```
+
+### useFlag
+
+Returned as part of `createFlags()`. A React hook to return a single flag. Must be used in side of `FlagsProvider`.
+
+| Args      | Type       | Required | Description                     |
+| --------- | ---------- | -------- | ------------------------------- |
+| `keyPath` | `string[]` | `true`   | Must be a valid key path of `T` |
+
+```tsx
+// my-component.tsx
+
+import { useFlags } from "./flags";
+
+const MyComponent = () => {
+  const apiUrl = useFlag(["config", "apiUrl"]);
+
+  return <div>The API url is "{apiUrl}"</div>;
+};
+```
+
+## Redux API
+
+### createFlagsReducer
+
+Returned as part of `createReduxBindings(...)`. Creates a reducer to be used in your Redux stores.
+
+| Args    | Type | Required | Description                     |
+| ------- | ---- | -------- | ------------------------------- |
+| `flags` | `T`  | `true`   | The initial value of your flags |
+
+```tsx
+// reducer.ts
+
+import { combineReducers } from "redux";
+import { Computable } from "flag";
+import { createFlagsReducer, MyFlags } from "./flags";
+import { otherReducer } from "./other-reducer";
+
+const flags: Computable<MyFlags> = {
+  // ...
+};
+
+export default combineReducers({
+  // 👇 must use the "flags" key of your state
+  flags: createFlagsReducuer(flags),
+  other: otherReducer
+});
 ```
 
 ### ConnectedFlagsProvider
 
-Same as `FlagsProvider` except flags are fetched from a Redux store which has been attached to
-React context by the React-Redux `Provider`.
+Returned as part of `createReduxBindings(...)`. Wraps `FlagsProvider`, fetching the flags from Redux state.
 
-```jsx
-<Provider store={store}>
-  <ConnectedFlagsProvider>
-    <App />
-  </ConnectedFlagsProvider>
-</Provider>
+```tsx
+import { Provider } from "redux";
+import { MyApplication } from "./app";
+import { ConnectedFlagsProvider } from "./flags";
+import { store } from "./store";
+
+const instance = (
+  <Provider store={store}>
+    <ConnectedFlagsProvider>
+      <MyApplication />
+    </ConnectedFlagsProvider>
+  </Provider>
+);
+
+React.render(instance, document.querySelector("#app"));
 ```
 
 ### setFlagsAction
 
-A dispatchable action that sets flags.
+Returned as part of `createReduxBindings(...)`. A dispatchable action that sets flags. Merges a partial value of pre-computed flags with existing pre-computed flags.
 
-```js
-store.dispatch(
-  setFlagsAction({
-    myFeature: false
-  })
-);
-```
+| Args    | Type            | Required | Description                |
+| ------- | --------------- | -------- | -------------------------- |
+| `flags` | `Computable<T>` | `true`   | Partial pre-computed flags |
 
-### createFlagsReducer
+```tsx
+import { Thunk } from "redux-thunk";
+import { setFlagsAction } from "./flags";
 
-Creates the reducer for your Redux store. Accepts any plain object as an argument.
+export const someThunk: Thunk<any> = ({ dispatch }) => async () => {
+  const user = await fetchUser();
 
-```js
-const myDefaultFlags = {
-  features: {
-    useMyCoolNewThing: true,
-    useMyOtherThing: false,
-    proAccount: ({features}) => features.useMyCoolNewThing && features.useMyOtherThing
-  },
-  config: {
-    apiUrl: 'www.example.com/api',
-  },
-}
-
-const reducer = combineReducers({
-  ...myOtherReducers
-  flags: createFlagsReducer(myDefaultFlags)
-})
+  dispatch(setFlagsAction(user.flags));
+  // ...
+};
 ```
 
 ## License
 
-MIT
+MPL-2.0
