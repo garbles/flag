@@ -4438,9 +4438,9 @@ use@^3.1.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/use/-/use-3.1.1.tgz#d50c8cac79a19fbc20f2911f56eb973f4e10070f"
 
-useful-types@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/useful-types/-/useful-types-0.2.0.tgz#f1a29a022f25838f825a478bf6f2bf7d0346d78b"
+useful-types@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/useful-types/-/useful-types-0.2.1.tgz#3e2c5dc975f55aca97e0b99e12b8546af1da82bc"
 
 util-deprecate@^1.0.1, util-deprecate@~1.0.1:
   version "1.0.2"
