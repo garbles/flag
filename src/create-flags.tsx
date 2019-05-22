@@ -1,5 +1,4 @@
-import React, { useContext } from "react";
-import shallowEqual from "shallowequal";
+import React, { useContext, useMemo } from "react";
 import { deepComputed, Computable } from "deep-computed";
 import { KeyPath, KeyPathValue } from "useful-types";
 import { isObject } from "./utils";
@@ -42,17 +41,11 @@ export function createFlags<T>(): CreateFlags<T> {
   const Context = React.createContext<T | null>(null) as React.Context<T>;
   Context.displayName = "Flag";
 
-  class FlagsProvider extends React.Component<ProviderProps<T>> {
-    shouldComponentUpdate(prevProps: ProviderProps<T>) {
-      return !shallowEqual(this.props.flags, prevProps.flags);
-    }
-
-    render() {
-      const value = deepComputed(this.props.flags);
-      return (
-        <Context.Provider value={value}>{this.props.children}</Context.Provider>
-      );
-    }
+  const FlagsProvider: React.SFC<ProviderProps<T>> = ({ flags, children }) => {
+    const value = useMemo(() => deepComputed(flags), [flags])
+    return (
+      <Context.Provider value={value}>{children}</Context.Provider>
+    );
   }
 
   const useFlags = () => useContext(Context);
