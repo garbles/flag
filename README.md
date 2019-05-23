@@ -3,7 +3,7 @@
 _Feature flagging made easy for React and Redux_
 
 ```
-yarn add flag@next
+yarn add flag
 ```
 
 ## Motivation
