@@ -10,7 +10,8 @@ const { FlagsProvider, Flag } = createFlags<Flags>();
 const {
   ConnectedFlagsProvider,
   createFlagsReducer,
-  setFlagsAction
+  setFlagsAction,
+  getFlagsSelector
 } = createReduxBindings(FlagsProvider);
 
 type Flags = {
@@ -52,6 +53,16 @@ describe("createFlagsReducer", () => {
     expect(reducer.length).toEqual(2);
   });
 
+  it("sets the initial state to the flags passed in", () => {
+    const dummyFlags: any = { a: flags.a };
+
+    const stateA = createFlagsReducer(flags)(undefined, { type: "" });
+    const stateB = createFlagsReducer(dummyFlags)(undefined, { type: "" });
+
+    expect(stateA).toBe(flags);
+    expect(stateB).toBe(dummyFlags);
+  });
+
   it("sets flags when the correct flag is dispatched", () => {
     const reducer = createFlagsReducer(flags);
 
@@ -69,6 +80,56 @@ describe("createFlagsReducer", () => {
 
     expect(next.a).toEqual(false);
     expect(next.e.f.g).toEqual(false);
+  });
+});
+
+describe("getFlagsSelector", () => {
+  it("fetches the correct state and computes the values", () => {
+    const aReducer = (s: string = "") => s;
+    const bReducer = (s: number = 12) => s;
+
+    const reducer = combineReducers({
+      a: aReducer,
+      b: bReducer,
+      flags: createFlagsReducer(flags)
+    });
+
+    let state = reducer(undefined, { type: "" });
+    let stateFlags = getFlagsSelector(state);
+
+    expect(stateFlags).toEqual({
+      a: true,
+      b: true,
+      c: true,
+      d: true,
+      e: {
+        f: {
+          g: true
+        }
+      },
+      h: false,
+      i: 123
+    });
+
+    /**
+     * Many computed flags depend on `a`, so toggle it.
+     */
+    state = reducer(state, setFlagsAction({ a: false }));
+    stateFlags = getFlagsSelector(state);
+
+    expect(stateFlags).toEqual({
+      a: false,
+      b: true,
+      c: false,
+      d: false,
+      e: {
+        f: {
+          g: false
+        }
+      },
+      h: false,
+      i: 123
+    });
   });
 });
 

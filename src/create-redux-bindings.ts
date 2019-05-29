@@ -1,6 +1,6 @@
 import { AnyAction, Reducer } from "redux";
 import merge from "lodash/merge";
-import { Computable } from "deep-computed";
+import deepComputed, { Computable } from "deep-computed";
 import { ProviderProps } from "./create-flags";
 import { connect } from "react-redux";
 import { isObject } from "./utils";
@@ -20,12 +20,9 @@ function isSetFlagsAction<T>(obj: any): obj is SetFlagsAction<T> {
   );
 }
 
-const mapStateToProps = <T>(state: ProviderProps<T>): ProviderProps<T> => ({
-  flags: state.flags
-});
-
 export type CreateReduxBindings<T> = {
   setFlagsAction(payload: Computable<Partial<T>>): SetFlagsAction<T>;
+  getFlagsSelector<S extends ProviderProps<T>>(state: S): T;
   createFlagsReducer(
     initialFlags: Computable<T>
   ): Reducer<Computable<T>, AnyAction>;
@@ -40,6 +37,31 @@ export function createReduxBindings<T>(
       type: MERGE_FLAGS_ACTION_TYPE,
       payload
     };
+  }
+
+  function mapStateToProps<S extends ProviderProps<T>>(
+    state: S
+  ): ProviderProps<T> {
+    return {
+      flags: state.flags
+    };
+  }
+
+  let prevFlags: Computable<T> | null = null;
+  let prevComputed: T | null = null;
+  function getFlagsSelector<S extends ProviderProps<T>>(state: S): T {
+    if (
+      prevFlags !== null &&
+      prevComputed !== null &&
+      prevFlags === state.flags
+    ) {
+      return prevComputed;
+    }
+
+    prevFlags = state.flags;
+    prevComputed = deepComputed(state.flags);
+
+    return prevComputed;
   }
 
   function createFlagsReducer(initialFlags: Computable<T>) {
@@ -62,6 +84,7 @@ export function createReduxBindings<T>(
 
   return {
     setFlagsAction,
+    getFlagsSelector,
     createFlagsReducer,
     ConnectedFlagsProvider
   };

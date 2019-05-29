@@ -1076,9 +1076,9 @@ decompress-response@^3.3.0:
   dependencies:
     mimic-response "^1.0.0"
 
-deep-computed@^0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/deep-computed/-/deep-computed-0.1.2.tgz#b633115ad6ec68577d43aa89799e06c8123a4c94"
+deep-computed@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/deep-computed/-/deep-computed-0.2.0.tgz#493170520e96fc7a971b36289744d3646c00d573"
 
 deep-extend@^0.6.0:
   version "0.6.0"
