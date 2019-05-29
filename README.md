@@ -255,7 +255,7 @@ export default combineReducers({
 ### getFlagsSelector
 
 A selector to retrieve _computed_ flags from Redux state. It is not enough to say `state.flags` because `createFlagsReducer` does not eagerly evaluate computable flags.
-(Thought I suppose if you don't use any computable flags, then you don't necessarily need this 🤷‍♂️.)
+(Though I suppose if you don't use any computable flags, then you don't necessarily need this 🤷‍♂️.)
 
 ```tsx
 // reducer.ts
