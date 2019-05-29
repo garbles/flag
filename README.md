@@ -92,11 +92,17 @@ import createReduxBindings from "flag/redux";
 
 const {
   setFlagsAction,
+  getFlagsSelector,
   createFlagsReducer,
   ConnectedFlagsProvider
 } = createReduxBindings(FlagsProvider);
 
-export { setFlagsAction, createFlagsReducer, ConnectedFlagsProvider };
+export {
+  setFlagsAction,
+  getFlagsSelector,
+  createFlagsReducer,
+  ConnectedFlagsProvider
+};
 ```
 
 ## React API
@@ -241,9 +247,29 @@ const flags: Computable<MyFlags> = {
 
 export default combineReducers({
   // 👇 must use the "flags" key of your state
-  flags: createFlagsReducuer(flags),
+  flags: createFlagsReducer(flags),
   other: otherReducer
 });
+```
+
+### getFlagsSelector
+
+A selector to retrieve _computed_ flags from Redux state. It is not enough to say `state.flags` because `createFlagsReducer` does not eagerly evaluate computable flags.
+(Thought I suppose if you don't use any computable flags, then you don't necessarily need this 🤷‍♂️.)
+
+```tsx
+// reducer.ts
+
+import { getFlagsSelector, MyFlags } from "./flags";
+
+type State = {
+  flags: MyFlags;
+  // ...
+};
+
+// ...
+
+export const getFlags = (state: State) => getFlagsSelector(state);
 ```
 
 ### ConnectedFlagsProvider
