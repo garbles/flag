@@ -209,4 +209,20 @@ describe("useFlag/useFlags", () => {
       </FlagsProvider>
     );
   });
+
+  it("handles missing context gracefully", () => {
+    expect.assertions(2);
+
+    const MyComponent = () => {
+      const flagA = useFlag(["a"]);
+      const next = useFlags();
+
+      expect(flagA).toBeUndefined();
+      expect(next).toBeNull();
+
+      return null;
+    };
+
+    mount(<MyComponent />);
+  });
 });

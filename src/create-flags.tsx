@@ -48,10 +48,23 @@ export function createFlags<T>(): CreateFlags<T> {
     );
   }
 
-  const useFlags = () => useContext(Context);
+  const useFlags = () => {
+    const value = useContext(Context);
+    if (value == null) {
+      console.warn('<Flag /> is expected to have a <FlagsProvider /> ancestor')
+    }
+
+    return value;
+  }
 
   const useFlag = <KP extends KeyPath<T>>(keyPath: KP): KeyPathValue<T, KP> => {
     const flags = useFlags();
+
+    // handle the case in which there is no context from a FlagsProvider
+    if (flags == null) {
+      return undefined as any;
+    }
+
     let result: any = flags;
 
     for (let next of keyPath as string[]) {
