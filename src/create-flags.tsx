@@ -1,7 +1,8 @@
 import React, { useContext, useMemo } from "react";
+import invariant from "invariant";
 import { deepComputed, Computable } from "deep-computed";
 import { KeyPath, KeyPathValue } from "useful-types";
-import { isObject } from "./utils";
+import { isObject, noDefaultsSymbol } from "./utils";
 
 export type ProviderProps<T> = {
   flags: Computable<T>;
@@ -33,25 +34,55 @@ export type ConsumerProps<T> =
 export type CreateFlags<T> = {
   FlagsProvider: React.ComponentType<ProviderProps<T>>;
   Flag: React.ComponentType<ConsumerProps<T>>;
-  useFlag<KP extends KeyPath<T>>(keyPath: KP): KeyPathValue<T, KP>;
+  useFlag<KP extends KeyPath<T>>(
+    keyPath: KP,
+    defaultValue?: KeyPathValue<T, KP>
+  ): KeyPathValue<T, KP>;
   useFlags(): T;
 };
 
-export function createFlags<T>(): CreateFlags<T> {
-  const Context = React.createContext<T | null>(null) as React.Context<T>;
+export const NO_CONTEXT_OR_DEFAULTS_ERROR =
+  "Calling `useFlags()`, `useFlag()`, or `<Flag />` requires either that the application " +
+  "is wrapped in a `<FlagsProvider />` or default flags are passed to `createFlags`.";
+
+export function createFlags<T>(defaultFlags?: T): CreateFlags<T> {
+  const contextDefaultValue =
+    defaultFlags !== undefined ? defaultFlags : noDefaultsSymbol;
+
+  const Context = React.createContext(contextDefaultValue);
+
   Context.displayName = "Flag";
 
   const FlagsProvider: React.SFC<ProviderProps<T>> = ({ flags, children }) => {
-    const value = useMemo(() => deepComputed(flags), [flags])
-    return (
-      <Context.Provider value={value}>{children}</Context.Provider>
-    );
-  }
+    const value = useMemo(() => deepComputed(flags), [flags]);
+    return <Context.Provider value={value}>{children}</Context.Provider>;
+  };
 
-  const useFlags = () => useContext(Context);
+  const useFlags = (): T => {
+    const flags = useContext(Context);
 
-  const useFlag = <KP extends KeyPath<T>>(keyPath: KP): KeyPathValue<T, KP> => {
-    const flags = useFlags();
+    invariant(flags !== noDefaultsSymbol, NO_CONTEXT_OR_DEFAULTS_ERROR);
+
+    return flags as T;
+  };
+
+  const useFlag = <KP extends KeyPath<T>>(
+    keyPath: KP,
+    defaultValue?: KeyPathValue<T, KP>
+  ): KeyPathValue<T, KP> => {
+    const flags = useContext(Context);
+    /**
+     * TypeScript will complain about returning if the value
+     * is `KeyPathValue<T, KP>`, so just type it as `any`.
+     */
+    const value: any = defaultValue;
+
+    if (flags === noDefaultsSymbol && value !== undefined) {
+      return value;
+    }
+
+    invariant(flags !== noDefaultsSymbol, NO_CONTEXT_OR_DEFAULTS_ERROR);
+
     let result: any = flags;
 
     for (let next of keyPath as string[]) {
@@ -69,7 +100,7 @@ export function createFlags<T>(): CreateFlags<T> {
   };
 
   function Flag(props: ConsumerProps<T>) {
-    const flags = useContext(Context);
+    const flags = useFlags();
     const flag = useFlag(props.name);
     const isEnabled = Boolean(flag);
 

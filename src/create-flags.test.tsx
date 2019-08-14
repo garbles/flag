@@ -1,9 +1,7 @@
-import { mount } from "enzyme";
+import { mount, render } from "enzyme";
 import * as React from "react";
-import { createFlags } from "./create-flags";
+import { createFlags, NO_CONTEXT_OR_DEFAULTS_ERROR } from "./create-flags";
 import deepComputed, { Computable } from "deep-computed";
-
-const { FlagsProvider, Flag, useFlag, useFlags } = createFlags<Flags>();
 
 type Flags = {
   a: boolean;
@@ -37,6 +35,8 @@ const True = () => <noscript>T</noscript>;
 const False = () => <noscript>F</noscript>;
 
 describe("FlagsProvider && Flag", () => {
+  const { FlagsProvider, Flag } = createFlags<Flags>();
+
   it("accepts uncomputed flags as props", () => {
     let instance = mount(
       <FlagsProvider flags={flags}>
@@ -186,6 +186,8 @@ describe("FlagsProvider && Flag", () => {
 });
 
 describe("useFlag/useFlags", () => {
+  const { FlagsProvider, useFlag, useFlags } = createFlags<Flags>();
+
   it("fetches a flag from the context", () => {
     expect.assertions(4);
 
@@ -208,5 +210,123 @@ describe("useFlag/useFlags", () => {
         <MyComponent />
       </FlagsProvider>
     );
+  });
+});
+
+describe("without using FlagsProvider", () => {
+  const err = new Error(NO_CONTEXT_OR_DEFAULTS_ERROR);
+
+  describe("without defaults", () => {
+    const { Flag, useFlag, useFlags } = createFlags<Flags>();
+
+    test("Flag throws", () => {
+      function MyComponent() {
+        return null;
+      }
+
+      expect(() =>
+        render(
+          <Flag name={["a"]}>
+            <MyComponent />
+          </Flag>
+        )
+      ).toThrowError(err);
+    });
+
+    test("useFlag throws without a default value", () => {
+      function MyComponent() {
+        const value = useFlag(["a"]);
+        return null;
+      }
+
+      expect(() => render(<MyComponent />)).toThrowError(err);
+    });
+
+    test("useFlag renders with a default value", () => {
+      function MyComponent() {
+        const value = useFlag(["a"], false);
+        return null;
+      }
+
+      expect(() => render(<MyComponent />)).not.toThrowError(err);
+    });
+
+    test("useFlags throws", () => {
+      function MyComponent() {
+        const value = useFlags();
+        return null;
+      }
+
+      expect(() => render(<MyComponent />)).toThrowError(err);
+    });
+  });
+
+  describe("with defaults", () => {
+    const defaultFlags: Flags = {
+      a: false,
+      b: false,
+      c: false,
+      d: false,
+      e: {
+        f: {
+          g: false
+        }
+      },
+      h: false,
+      i: 12
+    };
+
+    const { Flag, useFlag, useFlags } = createFlags<Flags>(defaultFlags);
+
+    test("Flag renders default", () => {
+      function MyComponent() {
+        return null;
+      }
+
+      expect(() =>
+        render(
+          <Flag name={["a"]}>
+            <MyComponent />
+          </Flag>
+        )
+      ).not.toThrowError(err);
+    });
+
+    test("useFlag renders defaults", () => {
+      function MyComponent() {
+        const value = useFlag(["a"]);
+        return null;
+      }
+
+      expect(() => render(<MyComponent />)).not.toThrowError(err);
+    });
+
+    test("useFlag renders defaults but ignores second argument", () => {
+      expect.assertions(2);
+
+      function MyComponent() {
+        const value = useFlag(["i"], 34);
+
+        expect(value).toEqual(defaultFlags.i);
+
+        return null;
+      }
+
+      expect(() => render(<MyComponent />)).not.toThrowError(err);
+    });
+
+    test("useFlags renders defaults", () => {
+      expect.assertions(2);
+
+      function MyComponent() {
+        const value = useFlags();
+
+        expect(value).toEqual(defaultFlags);
+
+        return null;
+      }
+
+      expect(() => render(<MyComponent />)).not.toThrowError(err);
+    });
   });
 });
