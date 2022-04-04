@@ -1,6 +1,6 @@
 {
   "name": "flag",
-  "version": "4.4.0",
+  "version": "5.0.0",
   "description": "Feature flagging made easy for React and Redux",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -8,42 +8,17 @@
   "author": "Gabe Scholz",
   "license": "MPL-2.0",
   "devDependencies": {
-    "@types/enzyme": "^3.9.1",
-    "@types/invariant": "^2.2.30",
-    "@types/jest": "^24.0.11",
-    "@types/lodash": "^4.14.123",
-    "@types/react": "^16.8.12",
-    "@types/react-dom": "^16.8.3",
-    "@types/react-redux": "^7.0.7",
-    "enzyme": "^3.9.0",
-    "enzyme-adapter-react-16": "^1.12.1",
-    "jest": "^24.7.1",
-    "np": "^4.0.2",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-redux": "^7.0.2",
-    "ts-jest": "^24.0.1",
-    "typescript": "^3.5.3"
+    "@testing-library/react": "^13.0.0",
+    "@types/jest": "^27.4.1",
+    "@types/node": "^17.0.23",
+    "jest": "^27.5.1",
+    "react": "^18.0.0",
+    "ts-jest": "^27.1.4",
+    "typescript": "^4.6.3"
   },
   "dependencies": {
-    "deep-computed": "^0.2.0",
-    "invariant": "^2.2.4",
-    "lodash": "^4.17.11",
-    "useful-types": "^0.4.0"
+    "@types/react": "^17.0.43"
   },
-  "peerDependencies": {
-    "@types/react": "^16.8.0",
-    "@types/react-dom": "^16.8.0",
-    "react": "^16.8.0",
-    "react-dom": "^16.8.0",
-    "react-redux": "^5.0.0 || ^6.0.0 || ^7.0.0",
-    "redux": "^2.0.0 || ^3.0.0 || ^4.0.0"
-  },
-  "scripts": {
-    "clean": "rm -rf build",
-    "build": "tsc",
-    "prepublish": "yarn clean && yarn build",
-    "test": "jest",
-    "pub": "np"
-  }
+  "peerDependencies": {},
+  "scripts": {}
 }

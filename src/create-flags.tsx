@@ -1,140 +1,86 @@
-import React, { useContext, useMemo } from "react";
-import invariant from "invariant";
-import { deepComputed, Computable } from "deep-computed";
-import { KeyPath, KeyPathValue } from "useful-types";
-import { isObject, noDefaultsSymbol } from "./utils";
+import React from "react";
+import { Backend, Flags, KeyPaths, GetValueFromKeyPath, ShallowKeys } from "./types";
 
-export type ProviderProps<T> = {
-  flags: Computable<T>;
+const MISSING_CONTEXT = Symbol();
+const NOOP = () => null;
+
+const isScalar = (value: any): value is string | number | boolean => {
+  const type = typeof value;
+  return type === "string" || type === "number" || type === "boolean";
 };
 
-type RenderConsumer<T> = {
-  name: KeyPath<T>;
-  render(flags: T): React.ReactNode;
-  fallbackRender?(flags: T): React.ReactNode;
-};
+export const createFlags = <F extends Flags>() => {
+  type B = Backend<Flags>;
 
-type ChildConsumer<T> = {
-  name: KeyPath<T>;
-  children: any;
-  fallbackRender?(flags: T): React.ReactNode;
-};
+  type ProviderProps = {
+    backend: B;
+  };
 
-type ComponentConsumer<T> = {
-  name: KeyPath<T>;
-  component: React.ComponentType<{ flags: T }>;
-  fallbackComponent?: React.ComponentType<{ flags: T }>;
-};
+  type ShallowFlagProps<K extends ShallowKeys<F>> = {
+    keyPath: K;
+    render(value: F[K]): React.ReactNode;
+    fallback?(): React.ReactNode;
+  };
 
-export type ConsumerProps<T> =
-  | RenderConsumer<T>
-  | ChildConsumer<T>
-  | ComponentConsumer<T>;
+  type KeyPathFlagProps<KP extends KeyPaths<F>> = {
+    keyPath: KP;
+    render(value: GetValueFromKeyPath<F, KP>): React.ReactNode;
+    fallback?(): React.ReactNode;
+  };
 
-export type CreateFlags<T> = {
-  FlagsProvider: React.ComponentType<ProviderProps<T>>;
-  Flag: React.ComponentType<ConsumerProps<T>>;
-  useFlag<KP extends KeyPath<T>>(
-    keyPath: KP,
-    defaultValue?: KeyPathValue<T, KP>
-  ): KeyPathValue<T, KP>;
-  useFlags(): T;
-};
-
-export const NO_CONTEXT_OR_DEFAULTS_ERROR =
-  "Calling `useFlags()`, `useFlag()`, or `<Flag />` requires either that the application " +
-  "is wrapped in a `<FlagsProvider />` or default flags are passed to `createFlags`.";
-
-export function createFlags<T>(defaultFlags?: T): CreateFlags<T> {
-  const contextDefaultValue =
-    defaultFlags !== undefined ? defaultFlags : noDefaultsSymbol;
-
-  const Context = React.createContext(contextDefaultValue);
-
+  const Context = React.createContext<B | typeof MISSING_CONTEXT>(MISSING_CONTEXT);
   Context.displayName = "Flag";
 
-  const FlagsProvider: React.SFC<ProviderProps<T>> = ({ flags, children }) => {
-    const value = useMemo(() => deepComputed(flags), [flags]);
-    return <Context.Provider value={value}>{children}</Context.Provider>;
+  const FlagsProvider: React.FC<ProviderProps> = ({ backend, children }) => {
+    return <Context.Provider value={backend}>{children}</Context.Provider>;
   };
 
-  const useFlags = (): T => {
-    const flags = useContext(Context);
+  function Flag<K extends ShallowKeys<F>>(props: ShallowFlagProps<K>): JSX.Element;
+  function Flag<KP extends KeyPaths<F>>(props: KeyPathFlagProps<KP>): JSX.Element;
+  function Flag({ keyPath, render, fallback }: any): JSX.Element {
+    fallback ??= NOOP;
 
-    invariant(flags !== noDefaultsSymbol, NO_CONTEXT_OR_DEFAULTS_ERROR);
+    const flag = useFlag(keyPath);
+    return flag ? render(flag) : fallback();
+  }
 
-    return flags as T;
-  };
+  function useFlag<K extends ShallowKeys<F>>(keyPath: K, defaultValue?: F[K]): F[K];
+  function useFlag<KP extends KeyPaths<F>>(keyPath: KP, defaultValue?: GetValueFromKeyPath<F, KP>): GetValueFromKeyPath<F, KP>;
+  function useFlag(keyPath: string | string[], defaultValue: any) {
+    const keyPath_ = (Array.isArray(keyPath) ? keyPath : [keyPath]) as KeyPaths<F>;
 
-  const useFlag = <KP extends KeyPath<T>>(
-    keyPath: KP,
-    defaultValue?: KeyPathValue<T, KP>
-  ): KeyPathValue<T, KP> => {
-    const flags = useContext(Context);
-    /**
-     * TypeScript will complain about returning if the value
-     * is `KeyPathValue<T, KP>`, so just type it as `any`.
-     */
-    const value: any = defaultValue;
+    const backend = React.useContext(Context);
 
-    if (flags === noDefaultsSymbol && value !== undefined) {
-      return value;
+    if (backend === MISSING_CONTEXT) {
+      throw new Error("Calling `useFlag()`, or `<Flag />` requires that the application is wrapped in a `<FlagsProvider />`");
     }
 
-    invariant(flags !== noDefaultsSymbol, NO_CONTEXT_OR_DEFAULTS_ERROR);
+    if (backend.has(keyPath_)) {
+      const result = backend.get(keyPath_) as GetValueFromKeyPath<F, any>;
 
-    let result: any = flags;
-
-    for (let next of keyPath as string[]) {
-      /**
-       * This trap is unreachable in TypeScript.
-       */
-      if (isObject(result) && !(next in result)) {
-        return undefined as any;
+      if (!isScalar(result)) {
+        throw new Error(`Flag "${keyPath_.join(".")}" is not a boolean, number or string`);
       }
 
-      result = result[next];
+      return result;
+    } else {
+      if (defaultValue === undefined) {
+        throw new Error(
+          `Flag "${keyPath_.join(".")}" is missing from backend "${backend.name}" and does not have an assigned default value`
+        );
+      }
+
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(`Flag "${keyPath_.join(".")}" is missing from backend "${backend.name}"`);
+      }
+
+      return defaultValue;
     }
-
-    return result;
-  };
-
-  function Flag(props: ConsumerProps<T>) {
-    const flags = useFlags();
-    const flag = useFlag(props.name);
-    const isEnabled = Boolean(flag);
-
-    if (isEnabled && "children" in props) {
-      return props.children;
-    }
-
-    if (isEnabled && "render" in props) {
-      return props.render(flags);
-    }
-
-    if (isEnabled && "component" in props) {
-      const Component = props.component;
-      return <Component flags={flags} />;
-    }
-
-    if (!isEnabled && "fallbackRender" in props && props.fallbackRender) {
-      return props.fallbackRender(flags);
-    }
-
-    if (!isEnabled && "fallbackComponent" in props && props.fallbackComponent) {
-      const Component = props.fallbackComponent;
-      return <Component flags={flags} />;
-    }
-
-    return null;
   }
 
   return {
     FlagsProvider,
     Flag,
     useFlag,
-    useFlags
   };
-}
-
-export default createFlags;
+};
