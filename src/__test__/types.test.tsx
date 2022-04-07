@@ -1,6 +1,6 @@
 import React from "react";
-import { KeyPaths, ShallowKeys } from "../types";
 import { createFlags } from "../create-flags";
+import { KeyPaths, ShallowKeys } from "../types";
 
 type Something = {
   a: boolean;
@@ -42,9 +42,7 @@ it("useFlag", () => {
   const { useFlag } = createFlags<Something>();
 
   function App() {
-    useFlag("a");
-
-    useFlag(["a"]);
+    useFlag("a", false);
 
     useFlag(["a"], false);
 
@@ -77,16 +75,16 @@ it("useFlag", () => {
 it("Flag", () => {
   const { Flag } = createFlags<Something>();
 
-  <Flag keyPath={"a"} render={(a) => <div>{a === true}</div>} />;
+  <Flag keyPath={["a"]} defaultValue={false} render={(a) => <div>{a === true}</div>} />;
 
   // @ts-expect-error
-  <Flag keyPath={"a"} render={(a) => <div>{a === "1"}</div>} />;
+  <Flag keyPath={["a"]} defaultValue={false} render={(a) => <div>{a === "1"}</div>} />;
 
   // @ts-expect-error
-  <Flag keyPath={["a"]} render={(a) => <div>{a === "1"}</div>} />;
+  <Flag keyPath={["a"]} defaultValue={false} render={(a) => <div>{a === "1"}</div>} />;
 
   // @ts-expect-error
-  <Flag keyPath={"b"} render={(b) => null} />;
+  <Flag keyPath={["b"]} render={(b) => null} />;
 
   // @ts-expect-error
   <Flag keyPath={["b"]} render={(b) => null} />;
@@ -94,8 +92,11 @@ it("Flag", () => {
   // @ts-expect-error
   <Flag keyPath={["b", "c"]} render={(c) => null} />;
 
-  <Flag keyPath={["b", "c", "e"]} render={(d) => <div>{d === "haha"}</div>} />;
+  <Flag keyPath={["b", "c", "e"]} defaultValue={"1"} render={(d) => <div>{d === "haha"}</div>} />;
 
   // @ts-expect-error
-  <Flag keyPath={["b", "c", "e"]} render={(d) => <div>{d === true}</div>} />;
+  <Flag keyPath={["b", "c", "e"]} defaultValue={"2"} render={(d) => <div>{d === true}</div>} />;
+
+  // @ts-expect-error
+  <Flag keyPath={["b", "c", "e"]} defaultValue={false} render={(d) => <div>{d === "true"}</div>} />;
 });

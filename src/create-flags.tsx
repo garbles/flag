@@ -1,12 +1,11 @@
 import React from "react";
-import { Backend, Flags, KeyPaths, GetValueFromKeyPath, ShallowKeys } from "./types";
+import { Backend, Flags, FlagScalar, GetValueFromKeyPath, KeyPaths, ShallowKeys } from "./types";
 
 const MISSING_CONTEXT = Symbol();
 const NOOP = () => null;
 
-const isScalar = (value: any): value is string | number | boolean => {
-  const type = typeof value;
-  return type === "string" || type === "number" || type === "boolean";
+const isFlagScalar = (value: any): value is FlagScalar => {
+  return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
 };
 
 export const createFlags = <F extends Flags>() => {
@@ -18,14 +17,25 @@ export const createFlags = <F extends Flags>() => {
 
   type ShallowFlagProps<K extends ShallowKeys<F>> = {
     keyPath: K;
+    defaultValue: F[K];
     render(value: F[K]): React.ReactNode;
     fallback?(): React.ReactNode;
   };
 
   type KeyPathFlagProps<KP extends KeyPaths<F>> = {
     keyPath: KP;
+    defaultValue: GetValueFromKeyPath<F, KP>;
     render(value: GetValueFromKeyPath<F, KP>): React.ReactNode;
     fallback?(): React.ReactNode;
+  };
+
+  const calleeStr = (keyPath: string[], defaultValue: any, format: "hook" | "component") => () => {
+    const keyPathStr = JSON.stringify(keyPath);
+    const defaultValueStr = JSON.stringify(defaultValue);
+
+    return format == "hook"
+      ? `useFlag(${keyPathStr}, ${defaultValueStr})`
+      : `<Flag keyPath=${keyPathStr} defaultValue=${defaultValueStr} ... />`;
   };
 
   const Context = React.createContext<B | typeof MISSING_CONTEXT>(MISSING_CONTEXT);
@@ -35,47 +45,66 @@ export const createFlags = <F extends Flags>() => {
     return <Context.Provider value={backend}>{children}</Context.Provider>;
   };
 
-  function Flag<K extends ShallowKeys<F>>(props: ShallowFlagProps<K>): JSX.Element;
-  function Flag<KP extends KeyPaths<F>>(props: KeyPathFlagProps<KP>): JSX.Element;
-  function Flag({ keyPath, render, fallback }: any): JSX.Element {
-    fallback ??= NOOP;
-
-    const flag = useFlag(keyPath);
-    return flag ? render(flag) : fallback();
-  }
-
-  function useFlag<K extends ShallowKeys<F>>(keyPath: K, defaultValue?: F[K]): F[K];
-  function useFlag<KP extends KeyPaths<F>>(keyPath: KP, defaultValue?: GetValueFromKeyPath<F, KP>): GetValueFromKeyPath<F, KP>;
-  function useFlag(keyPath: string | string[], defaultValue: any) {
+  const internalUseFlag = (keyPath: string | string[], defaultValue: any, displayCallee: () => string) => {
     const keyPath_ = (Array.isArray(keyPath) ? keyPath : [keyPath]) as KeyPaths<F>;
+
+    if (defaultValue === undefined) {
+      throw new Error(`Calling \`${displayCallee()}\` requires that you provide a default value that matches the type of the flag.`);
+    }
+
+    const expectedType = typeof defaultValue;
 
     const backend = React.useContext(Context);
 
     if (backend === MISSING_CONTEXT) {
-      throw new Error("Calling `useFlag()`, or `<Flag />` requires that the application is wrapped in a `<FlagsProvider />`");
+      throw new Error(`Calling \`${displayCallee()}\` requires that the application is wrapped in a \`<FlagsProvider />\``);
     }
 
-    if (backend.has(keyPath_)) {
-      const result = backend.get(keyPath_) as GetValueFromKeyPath<F, any>;
+    let result = backend.get(keyPath_);
 
-      if (!isScalar(result)) {
-        throw new Error(`Flag "${keyPath_.join(".")}" is not a boolean, number or string`);
-      }
+    if (result === undefined && process.env.NODE_ENV === "development") {
+      console.warn(`\`${displayCallee()}\` does not return anything from backend "${backend.name}".`);
+    }
 
-      return result;
-    } else {
-      if (defaultValue === undefined) {
-        throw new Error(
-          `Flag "${keyPath_.join(".")}" is missing from backend "${backend.name}" and does not have an assigned default value`
+    result ??= defaultValue;
+
+    if (!isFlagScalar(result)) {
+      throw new Error(
+        `Calling \`${displayCallee()}\` requires that the result is a boolean, number or string. Instead returned ${JSON.stringify(
+          result
+        )}.`
+      );
+    }
+
+    if (typeof result !== expectedType) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn(
+          `Expected result of \`${displayCallee()}\` to be a ${expectedType} (based on the default value of ${JSON.stringify(
+            defaultValue
+          )}). Instead returned ${JSON.stringify(result)}. Falling back to default value.`
         );
-      }
-
-      if (process.env.NODE_ENV !== "production") {
-        console.warn(`Flag "${keyPath_.join(".")}" is missing from backend "${backend.name}"`);
       }
 
       return defaultValue;
     }
+
+    return result;
+  };
+
+  function Flag<K extends ShallowKeys<F>>(props: ShallowFlagProps<K>): JSX.Element;
+  function Flag<KP extends KeyPaths<F>>(props: KeyPathFlagProps<KP>): JSX.Element;
+  function Flag({ keyPath, defaultValue, render, fallback }: any): JSX.Element {
+    fallback ??= NOOP;
+
+    const flag = internalUseFlag(keyPath, defaultValue, calleeStr(keyPath, defaultValue, "component"));
+
+    return flag === false ? fallback() : render(flag);
+  }
+
+  function useFlag<K extends ShallowKeys<F>>(keyPath: K, defaultValue: F[K]): F[K];
+  function useFlag<KP extends KeyPaths<F>>(keyPath: KP, defaultValue: GetValueFromKeyPath<F, KP>): GetValueFromKeyPath<F, KP>;
+  function useFlag(keyPath: any, defaultValue: any) {
+    return internalUseFlag(keyPath, defaultValue, calleeStr(keyPath, defaultValue, "hook"));
   }
 
   return {
