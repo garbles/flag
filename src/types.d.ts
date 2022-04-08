@@ -15,8 +15,3 @@ export type GetValueFromKeyPath<T, KP extends KeyPaths<T>> = KP extends [infer K
   : T extends FlagScalar
   ? T
   : never;
-
-export type Backend<F> = {
-  name: string;
-  get<KP extends KeyPaths<F>>(keyPath: KP): GetValueFromKeyPath<F, KP> | null;
-};

@@ -20,6 +20,10 @@
   "dependencies": {
     "@types/react": "^17.0.43"
   },
-  "peerDependencies": {},
-  "scripts": {}
+  "peerDependencies": {
+    "react": "^18"
+  },
+  "scripts": {
+    "test": "jest"
+  }
 }

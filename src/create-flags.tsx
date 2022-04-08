@@ -1,5 +1,6 @@
 import React from "react";
-import { Backend, Flags, FlagScalar, GetValueFromKeyPath, KeyPaths, ShallowKeys } from "./types";
+import { Flags, FlagScalar, GetValueFromKeyPath, KeyPaths, ShallowKeys } from "./types";
+import { AbstractBackend } from "./backends";
 
 const MISSING_CONTEXT = Symbol();
 const NOOP = () => null;
@@ -9,7 +10,7 @@ const isFlagScalar = (value: any): value is FlagScalar => {
 };
 
 export const createFlags = <F extends Flags>() => {
-  type B = Backend<Flags>;
+  type B = AbstractBackend<Flags>;
 
   type ProviderProps = {
     backend: B;

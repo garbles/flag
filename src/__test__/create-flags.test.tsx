@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { createFlags } from "../create-flags";
-import { Backend } from "../types";
+import { AbstractBackend, NullBackend } from "../backends";
 
 type Flags = {
   a: number;
@@ -27,7 +27,7 @@ const AppWithoutContext = (props: { a: number; b: string; g: boolean }) => {
   return <div role="main">{JSON.stringify({ a, b, g })}</div>;
 };
 
-const App = (props: { backend: Backend<Flags>; defaults: { a: number; b: string; g: boolean } }) => {
+const App = (props: { backend: AbstractBackend<Flags>; defaults: { a: number; b: string; g: boolean } }) => {
   const defaults = props.defaults ?? {};
 
   return (
@@ -55,7 +55,7 @@ test("when the background always returns the same thing", () => {
     },
   };
 
-  const staticBackground: Backend<Flags> = {
+  const staticBackground = {
     name: "static",
     get(keys: any) {
       const [first, ...rest] = keys;
@@ -67,7 +67,7 @@ test("when the background always returns the same thing", () => {
 
       return result;
     },
-  };
+  } as AbstractBackend<Flags>;
 
   render(<App backend={staticBackground} defaults={{ a: 0, b: "", g: false }} />);
 
@@ -75,16 +75,9 @@ test("when the background always returns the same thing", () => {
 });
 
 test("works with a backend that does nothing", () => {
-  const nullBackground: Backend<Flags> = {
-    name: "null",
-    get() {
-      return null;
-    },
-  };
-
   const defaults = { a: 1, b: "hello", g: false };
 
-  render(<App backend={nullBackground} defaults={defaults} />);
+  render(<App backend={new NullBackend()} defaults={defaults} />);
 
   expect(getData()).toEqual(defaults);
 });
@@ -102,17 +95,10 @@ test("throws with a context", () => {
 test("throws when you don't provide a default value", () => {
   const restore = silenceConsole();
 
-  const nullBackground: Backend<Flags> = {
-    name: "null",
-    get() {
-      return null;
-    },
-  };
-
   expect(() =>
     render(
       <App
-        backend={nullBackground}
+        backend={new NullBackend()}
         // @ts-expect-error
         defaults={{}}
       />
@@ -127,15 +113,14 @@ test("throws when you don't provide a default value", () => {
 test("throws when the flag won't be a scalar", () => {
   const restore = silenceConsole();
 
-  const whoopsieBackground: Backend<Flags> = {
-    name: "whoopsie",
-    // @ts-expect-error
+  class WhoopsieBackground extends AbstractBackend<Flags> {
+    name = "whoopsie";
     get() {
-      return { oof: 10 };
-    },
-  };
+      return { oof: 10 } as any;
+    }
+  }
 
-  expect(() => render(<App backend={whoopsieBackground} defaults={{ a: 3, b: "", g: false }} />)).toThrowError(
+  expect(() => render(<App backend={new WhoopsieBackground()} defaults={{ a: 3, b: "", g: false }} />)).toThrowError(
     new Error('Calling `useFlag("a", 3)` requires that the result is a boolean, number or string. Instead returned {"oof":10}.')
   );
 
@@ -143,15 +128,14 @@ test("throws when the flag won't be a scalar", () => {
 });
 
 test("returns the default value if the return type doesn't match the default value type", () => {
-  const whoopsieBackground: Backend<Flags> = {
-    name: "whoopsie",
-    // @ts-expect-error
+  class WhoopsieBackground extends AbstractBackend<Flags> {
+    name = "whoopsie";
     get() {
-      return "whoopsie";
-    },
-  };
+      return "whoopsie" as any;
+    }
+  }
 
-  render(<App backend={whoopsieBackground} defaults={{ a: 4, b: "", g: false }} />);
+  render(<App backend={new WhoopsieBackground()} defaults={{ a: 4, b: "", g: false }} />);
 
   expect(getData()).toEqual({ a: 4, b: "whoopsie", g: false });
 });
