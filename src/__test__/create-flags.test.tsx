@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { createFlags } from "../create-flags";
-import { AbstractBackend, NullBackend } from "../backends";
+import { AbstractBackend } from "../backends";
 
 type Flags = {
   a: number;
@@ -57,9 +57,9 @@ test("when the background always returns the same thing", () => {
 
   const staticBackground = {
     name: "static",
-    get(keys: any) {
+    getSnapshot(keys: any) {
       const [first, ...rest] = keys;
-      let result = data[first];
+      let result: any = data[first];
 
       for (const key of rest) {
         result = result[key];
@@ -67,8 +67,9 @@ test("when the background always returns the same thing", () => {
 
       return result;
     },
-  } as AbstractBackend<Flags>;
+  };
 
+  // @ts-expect-error
   render(<App backend={staticBackground} defaults={{ a: 0, b: "", g: false }} />);
 
   expect(getData()).toEqual({ a: 0, b: "goodbye", g: true });
@@ -115,7 +116,7 @@ test("throws when the flag won't be a scalar", () => {
 
   class WhoopsieBackground extends AbstractBackend<Flags> {
     name = "whoopsie";
-    get() {
+    getSnapshot() {
       return { oof: 10 } as any;
     }
   }
@@ -130,7 +131,7 @@ test("throws when the flag won't be a scalar", () => {
 test("returns the default value if the return type doesn't match the default value type", () => {
   class WhoopsieBackground extends AbstractBackend<Flags> {
     name = "whoopsie";
-    get() {
+    getSnapshot() {
       return "whoopsie" as any;
     }
   }
