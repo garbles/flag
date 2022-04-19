@@ -14,9 +14,9 @@ const isFlagScalar = (value: any): value is FlagScalar => {
 export const createFlags = <F extends Flags>() => {
   type B = IAbstractBackend<Flags>;
 
-  type ProviderProps = {
+  type ProviderProps = React.PropsWithChildren<{
     backend: B;
-  };
+  }>;
 
   type ShallowFlagProps<K extends ShallowKeys<F>> = {
     keyPath: K;

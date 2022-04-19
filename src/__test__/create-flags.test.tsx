@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { createFlags } from "../create-flags";
-import { AbstractBackend } from "../backends";
+import { AbstractBackend, IAbstractBackend } from "../backends";
 import { GetValueFromKeyPath, KeyPaths } from "../types";
 
 type Flags = {
@@ -28,7 +28,7 @@ const AppWithoutContext = (props: { a: number; b: string; g: boolean }) => {
   return <div role="main">{JSON.stringify({ a, b, g })}</div>;
 };
 
-const App = (props: { backend: AbstractBackend<Flags>; defaults: { a: number; b: string; g: boolean } }) => {
+const App = (props: { backend: IAbstractBackend<Flags>; defaults: { a: number; b: string; g: boolean } }) => {
   const defaults = props.defaults ?? {};
 
   return (
