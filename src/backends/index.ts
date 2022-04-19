@@ -1,1 +1,1 @@
-export { AbstractBackend } from "./abstract-backend";
+export { AbstractBackend, IAbstractBackend } from "./abstract-backend";

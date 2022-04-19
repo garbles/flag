@@ -1,9 +1,15 @@
-import { PendingValue } from "../pending-value";
-import { GetValueFromKeyPath, KeyPaths, Subscriber, Unsubscribe, ExternalStore } from "../types";
+import { AsyncMutableRefObject, createAsyncRef } from "async-ref";
+import { GetValueFromKeyPath, KeyPaths, Subscriber, Unsubscribe, ExternalStore, Notifier } from "../types";
 
-export const toExternalStore = Symbol();
+export interface IAbstractBackend<F> {
+  name: string;
+  get<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T;
+  toExternalStore<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): ExternalStore<T>;
+}
 
-export abstract class AbstractBackend<F> {
+export abstract class AbstractBackend<F> implements IAbstractBackend<F> {
+  public abstract get<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T;
+
   #listeners = new Set<Subscriber>();
 
   #subscribe = (sub: Subscriber): Unsubscribe => {
@@ -11,13 +17,15 @@ export abstract class AbstractBackend<F> {
     return () => this.#listeners.delete(sub);
   };
 
-  public abstract name: string;
+  #notify: Notifier = () => this.#listeners.forEach((sub) => sub());
 
-  protected abstract getSnapshot<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T;
+  public get name() {
+    return this.constructor.name;
+  }
 
-  public [toExternalStore]<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): ExternalStore<T> {
+  public toExternalStore<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): ExternalStore<T> {
     const subscribe = this.#subscribe;
-    const getSnapshot = () => this.getSnapshot(keyPath, defaultValue);
+    const getSnapshot = () => this.get(keyPath, defaultValue);
 
     return {
       subscribe,
@@ -25,11 +33,7 @@ export abstract class AbstractBackend<F> {
     };
   }
 
-  protected forceRender(): void {
-    this.#listeners.forEach((sub) => sub());
-  }
-
-  protected createPendingValue<T>(): PendingValue<T> {
-    return new PendingValue<T>(() => this.forceRender());
+  protected createAsyncRef<T>(): AsyncMutableRefObject<T> {
+    return createAsyncRef(this.#notify);
   }
 }

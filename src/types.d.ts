@@ -12,6 +12,7 @@ export type ShallowKeys<T> = {
 
 export type Subscriber = () => void;
 export type Unsubscribe = () => void;
+export type Notifier = () => void;
 
 export type ExternalStore<T> = {
   getSnapshot(): T;
