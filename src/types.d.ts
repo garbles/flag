@@ -16,6 +16,7 @@ export type Notifier = () => void;
 
 export type ExternalStore<T> = {
   getSnapshot(): T;
+  getServerSnapshot(): T;
   subscribe(sub: Subscriber): Unsubscribe;
 };
 

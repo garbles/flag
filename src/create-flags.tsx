@@ -63,8 +63,8 @@ export const createFlags = <F extends Flags>() => {
       throw new Error(`Calling \`${displayCallee()}\` requires that the application is wrapped in a \`<FlagsProvider />\``);
     }
 
-    const store = backend.toExternalStore(keyPath_, defaultValue);
-    let result = React.useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
+    const ext = backend.toExternalStore(keyPath_, defaultValue);
+    let result = React.useSyncExternalStore(ext.subscribe, ext.getSnapshot, ext.getServerSnapshot);
 
     if ((result === undefined || result === null) && process.env.NODE_ENV === "development") {
       console.warn(`\`${displayCallee()}\` does not return anything from backend "${backend.name}".`);

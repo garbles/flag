@@ -57,7 +57,7 @@ test("when the background always returns the same thing", () => {
   };
 
   class StaticBackend extends AbstractBackend<Flags> {
-    get(keys: any) {
+    getSnapshot(keys: any) {
       const [first, ...rest] = keys;
       let result: any = data[first];
 
@@ -78,7 +78,7 @@ test("works with a backend that does nothing", () => {
   const defaults = { a: 1, b: "hello", g: false };
 
   class NullBackend extends AbstractBackend<Flags> {
-    get<KP extends KeyPaths<Flags>, T extends GetValueFromKeyPath<Flags, KP>>(key: KP, defaultValue: T): T {
+    getSnapshot<KP extends KeyPaths<Flags>, T extends GetValueFromKeyPath<Flags, KP>>(key: KP, defaultValue: T): T {
       return defaultValue;
     }
   }
@@ -102,7 +102,7 @@ test("throws when you don't provide a default value", () => {
   const restore = silenceConsole();
 
   class NullBackend extends AbstractBackend<Flags> {
-    get<KP extends KeyPaths<Flags>, T extends GetValueFromKeyPath<Flags, KP>>(key: KP, defaultValue: T): T {
+    getSnapshot<KP extends KeyPaths<Flags>, T extends GetValueFromKeyPath<Flags, KP>>(key: KP, defaultValue: T): T {
       return defaultValue;
     }
   }
@@ -126,7 +126,7 @@ test("throws when the flag won't be a scalar", () => {
   const restore = silenceConsole();
 
   class WhoopsieBackend extends AbstractBackend<Flags> {
-    get() {
+    getSnapshot() {
       return { oof: 10 } as any;
     }
   }
@@ -140,7 +140,7 @@ test("throws when the flag won't be a scalar", () => {
 
 test("returns the default value if the return type doesn't match the default value type", () => {
   class WhoopsieBackend extends AbstractBackend<Flags> {
-    get() {
+    getSnapshot() {
       return "whoopsie" as any;
     }
   }
