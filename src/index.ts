@@ -1,11 +1,11 @@
 import type { AsyncMutableRefObject } from "async-ref";
 import type { KeyPaths, GetValueFromKeyPath, ExternalStore } from "./types";
-import type { IBackend } from "./backends";
+import type { Backend } from "./backends";
 
 type KeyPaths_<T> = KeyPaths<T>;
 type GetValueFromKeyPath_<T, KP extends KeyPaths<T>> = GetValueFromKeyPath<T, KP>;
 type ExternalStore_<T> = ExternalStore<T>;
-type Backend_<T> = IBackend<T>;
+type Backend_<T> = Backend<T>;
 type AsyncMutableRefObject_<T> = AsyncMutableRefObject<T>;
 
 export module Types {
@@ -17,6 +17,4 @@ export module Types {
 }
 
 export { createFlags } from "./create-flags";
-export { AbstractBackend, ComputedBackend, NullBackend, StaticBackend } from "./backends";
-
-throw "GABE: AlwaysBackend and something when node env is test";
+export { AlwaysBackend, AbstractBackend, ComputedBackend, NullBackend, StaticBackend } from "./backends";
