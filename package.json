@@ -1,10 +1,11 @@
 {
   "name": "flag",
   "version": "5.0.0",
-  "description": "Strictly typed feature flagging made easy for React",
+  "description": "Strictly typed feature flagging for React",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "sideEffects": false,
   "repository": "https://github.com/garbles/flag",
   "author": "Gabe Scholz",
   "license": "MPL-2.0",

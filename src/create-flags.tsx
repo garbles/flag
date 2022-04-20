@@ -1,7 +1,7 @@
 /// <reference types="react/next" />
 
 import React from "react";
-import { Flags, FlagScalar, GetValueFromKeyPath, GetValueFromKeyPathString, KeyPaths, KeyPathStrings } from "./types";
+import { Flags, FlagScalar, GetValueFromKeyPath, GetValueFromKeyPathString, KeyPath, KeyPathString } from "./types";
 import { Backend } from "./backends";
 
 const MISSING_CONTEXT = Symbol();
@@ -18,14 +18,14 @@ export const createFlags = <F extends Flags>() => {
     backend: B;
   }>;
 
-  type KeyPathStringFlagProps<K extends KeyPathStrings<F>> = {
+  type KeyPathStringFlagProps<K extends KeyPathString<F>> = {
     keyPath: K;
     defaultValue: GetValueFromKeyPathString<F, K>;
     render(value: GetValueFromKeyPathString<F, K>): React.ReactNode;
     fallback?(): React.ReactNode;
   };
 
-  type KeyPathFlagProps<KP extends KeyPaths<F>> = {
+  type KeyPathFlagProps<KP extends KeyPath<F>> = {
     keyPath: KP;
     defaultValue: GetValueFromKeyPath<F, KP>;
     render(value: GetValueFromKeyPath<F, KP>): React.ReactNode;
@@ -49,7 +49,7 @@ export const createFlags = <F extends Flags>() => {
   };
 
   const internalUseFlag = (keyPath: string | string[], defaultValue: any, displayCallee: () => string) => {
-    const keyPath_ = (Array.isArray(keyPath) ? keyPath : keyPath.split(".")) as KeyPaths<F>;
+    const keyPath_ = (Array.isArray(keyPath) ? keyPath : keyPath.split(".")) as KeyPath<F>;
 
     if (defaultValue === undefined) {
       throw new Error(`Calling \`${displayCallee()}\` requires that you provide a default value that matches the type of the flag.`);
@@ -99,8 +99,8 @@ export const createFlags = <F extends Flags>() => {
     return result;
   };
 
-  function Flag<K extends KeyPathStrings<F>>(props: KeyPathStringFlagProps<K>): JSX.Element;
-  function Flag<KP extends KeyPaths<F>>(props: KeyPathFlagProps<KP>): JSX.Element;
+  function Flag<K extends KeyPathString<F>>(props: KeyPathStringFlagProps<K>): JSX.Element;
+  function Flag<KP extends KeyPath<F>>(props: KeyPathFlagProps<KP>): JSX.Element;
   function Flag({ keyPath, defaultValue, render, fallback }: any): JSX.Element {
     fallback ??= NOOP;
 
@@ -109,8 +109,8 @@ export const createFlags = <F extends Flags>() => {
     return flag === false ? fallback() : render(flag);
   }
 
-  function useFlag<K extends KeyPathStrings<F>>(keyPath: K, defaultValue: GetValueFromKeyPathString<F, K>): GetValueFromKeyPathString<F, K>;
-  function useFlag<KP extends KeyPaths<F>>(keyPath: KP, defaultValue: GetValueFromKeyPath<F, KP>): GetValueFromKeyPath<F, KP>;
+  function useFlag<K extends KeyPathString<F>>(keyPath: K, defaultValue: GetValueFromKeyPathString<F, K>): GetValueFromKeyPathString<F, K>;
+  function useFlag<KP extends KeyPath<F>>(keyPath: KP, defaultValue: GetValueFromKeyPath<F, KP>): GetValueFromKeyPath<F, KP>;
   function useFlag(keyPath: any, defaultValue: any) {
     return internalUseFlag(keyPath, defaultValue, calleeStr(keyPath, defaultValue, "hook"));
   }

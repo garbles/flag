@@ -1,5 +1,5 @@
 import { AbstractBackend } from "./abstract-backend";
-import { GetValueFromKeyPath, KeyPaths } from "../types";
+import { GetValueFromKeyPath, KeyPath } from "../types";
 
 type AlwaysMapping = {
   boolean: boolean;
@@ -15,7 +15,7 @@ export class AlwaysBackend<F> extends AbstractBackend<F> {
     this.#alwaysMapping = alwaysMapping;
   }
 
-  getSnapshot<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T {
+  getSnapshot<KP extends KeyPath<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T {
     const type = typeof defaultValue;
 
     if (type !== "boolean" && type !== "string" && type !== "number") {

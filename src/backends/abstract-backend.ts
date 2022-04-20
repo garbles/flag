@@ -1,11 +1,11 @@
 import { AsyncMutableRefObject, createAsyncRef } from "async-ref";
-import { GetValueFromKeyPath, KeyPaths, Subscriber, Unsubscribe, ExternalStore, Notifier } from "../types";
+import { GetValueFromKeyPath, KeyPath, Subscriber, Unsubscribe, ExternalStore, Notifier } from "../types";
 import { Backend } from "./types";
 
 export abstract class AbstractBackend<F> implements Backend<F> {
-  public abstract getSnapshot<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T;
+  public abstract getSnapshot<KP extends KeyPath<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T;
 
-  public getServerSnapshot<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T {
+  public getServerSnapshot<KP extends KeyPath<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T {
     return this.getSnapshot(keyPath, defaultValue);
   }
 
@@ -15,7 +15,7 @@ export abstract class AbstractBackend<F> implements Backend<F> {
     return this.constructor.name;
   }
 
-  public toExternalStore<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): ExternalStore<T> {
+  public toExternalStore<KP extends KeyPath<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): ExternalStore<T> {
     const subscribe = this.#subscribe;
     const getSnapshot = () => this.getSnapshot(keyPath, defaultValue);
     const getServerSnapshot = () => this.getServerSnapshot(keyPath, defaultValue);

@@ -14,11 +14,11 @@ export type FlagScalar = string | number | boolean;
 
 export type Flags = { [key: string]: FlagScalar | Flags };
 
-export type KeyPaths<T> = {
-  [Key in keyof T & string]: T[Key] extends object ? [Key, ...KeyPaths<T[Key]>] : [Key];
+export type KeyPath<T> = {
+  [Key in keyof T & string]: T[Key] extends object ? [Key, ...KeyPath<T[Key]>] : [Key];
 }[keyof T & string];
 
-export type KeyPathStrings<T> = Join<KeyPaths<T>>;
+export type KeyPathString<T> = Join<KeyPath<T>>;
 
 export type Subscriber = () => void;
 export type Unsubscribe = () => void;
@@ -30,7 +30,7 @@ export type ExternalStore<T> = {
   subscribe(sub: Subscriber): Unsubscribe;
 };
 
-export type GetValueFromKeyPath<T, KP extends KeyPaths<T>> = KP extends [infer K, ...infer Rest]
+export type GetValueFromKeyPath<T, KP extends KeyPath<T>> = KP extends [infer K, ...infer Rest]
   ? /**
      * `GetValueFromKeyPath<T[K], Rest>` produces errors because we haven't proven that `K` is a key of `T`
      * or that `Rest` is a `KeyPaths<T[K]>`. As we just derived the key path from `T`, I'm pretty sure
@@ -42,6 +42,6 @@ export type GetValueFromKeyPath<T, KP extends KeyPaths<T>> = KP extends [infer K
   ? T
   : never;
 
-export type GetValueFromKeyPathString<T, KP extends Join<KeyPaths<T>>> = Split<KP> extends KeyPaths<T>
+export type GetValueFromKeyPathString<T, KP extends Join<KeyPath<T>>> = Split<KP> extends KeyPath<T>
   ? GetValueFromKeyPath<T, Split<KP>>
   : never;

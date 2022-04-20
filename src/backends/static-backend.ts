@@ -1,5 +1,5 @@
 import { AbstractBackend } from "./abstract-backend";
-import { GetValueFromKeyPath, KeyPaths } from "../types";
+import { GetValueFromKeyPath, KeyPath } from "../types";
 
 export class StaticBackend<F> extends AbstractBackend<F> {
   #data: Partial<F>;
@@ -9,7 +9,7 @@ export class StaticBackend<F> extends AbstractBackend<F> {
     this.#data = data;
   }
 
-  getSnapshot<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T {
+  getSnapshot<KP extends KeyPath<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T {
     if (keyPath.length === 0) {
       return defaultValue;
     }

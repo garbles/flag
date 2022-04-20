@@ -1,6 +1,6 @@
 import React from "react";
 import { createFlags } from "../create-flags";
-import { KeyPaths, GetValueFromKeyPathString, KeyPathStrings } from "../types";
+import { KeyPath, GetValueFromKeyPathString, KeyPathString } from "../types";
 
 type Flags = {
   a: boolean;
@@ -13,8 +13,8 @@ type Flags = {
   f: number;
 };
 
-type Keys = KeyPaths<Flags>;
-type StringKeys = KeyPathStrings<Flags>;
+type Keys = KeyPath<Flags>;
+type StringKeys = KeyPathString<Flags>;
 
 it("check key paths", () => {
   const a: Keys = ["a"];

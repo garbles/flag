@@ -31,192 +31,88 @@ export type MyFlags = {
 export const { FlagBackendProvider, Flag, useFlag } = createFlags<MyFlags>();
 ```
 
-## React API
+## React Bindings
 
 ### FlagBackendProvider
 
-Returned as part of `createFlags<T>()`. This React component expects to receive a `Backend` that returns flags of type `T`.
+_Returned as part of `createFlags<T>()`._
 
-| Props      | Type            | Required | Description            |
-| ---------- | --------------- | -------- | ---------------------- |
-| `backend`  | `Computable<T>` | `true`   | All pre-computed flags |
-| `children` | `ReactNode`     | `true`   | React children         |
+This React component provides a `Backend<T>` (see below) as a data source for `Flag` and `useFlag`.
+
+| Props      | Type               | Required | Description            |
+| ---------- | ------------------ | -------- | ---------------------- |
+| `backend`  | `Types.Backend<T>` | `true`   | All pre-computed flags |
+| `children` | `ReactNode`        | `true`   | React children         |
 
 ```tsx
 // index.tsx
 
+import { NullBackend } from "flag";
 import { MyApplication } from "./app";
-import { FlagsProvider, Flag } from "./flags";
+import { FlagBackendProvider } from "./flags";
+
+const backend = new NullBackend();
 
 const instance = (
-  <FlagsProvider flags={flags}>
+  <FlagBackendProvider backend={backend}>
     <MyApplication />
-  </FlagsProvider>
+  </FlagBackendProvider>
 );
 
 React.render(instance, document.querySelector("#app"));
 ```
 
-### Flag
-
-Returned as part of `createFlags()`. Renders a some UI based on whether a flag is truthy or falsy. It's a glorified if statement 😬. Must be used in side of `FlagsProvider`.
-
-| Props               | Type                          | Required | Description                         |
-| ------------------- | ----------------------------- | -------- | ----------------------------------- |
-| `name`              | `string[]`                    | `true`   | Must be a valid key path of `T`     |
-| `children`          | `ReactNode`                   | `false`  | React children                      |
-| `render`            | `(flags: T) => ReactNode`     | `false`  | Function that returns a `ReactNode` |
-| `fallbackRender`    | `(flags: T) => ReactNode`     | `false`  | Function that returns a `ReactNode` |
-| `component`         | `ComponentType<{ flags: T }>` | `false`  | React Component with `T` as props   |
-| `fallbackComponent` | `ComponentType<{ flags: T }>` | `false`  | React Component with `T` as props   |
-
-Order of deciding which of these nodes to renders is as follows:
-
-- If the flag is `truthy`:
-  - render `children` if defined
-  - call `render` with `T` if defined _or_
-  - call `component` with `{flags: T}` if defined _else_
-  - return `null`
-- If the flag is `falsy`:
-  - call `fallbackRender` with `T` if defined _or_
-  - call `fallbackComponent` with `{ flags: T }` if defined _else_
-  - return `null`
-
-```tsx
-<Flag
-  name={["features", "useMyCoolNewThing"]}
-  render={() => <div>Rendered on truthy</div>}
-  fallbackRender={() => <div>Rendered on falsy</div>}
-/>
-```
-
-### useFlags
-
-Returned as part of `createFlags()`. A React hook that returns all of the flags. Must be used in side of `FlagsProvider`.
-
-```tsx
-// my-component.tsx
-
-import { useFlags } from "./flags";
-
-const MyComponent = () => {
-  const flags = useFlags();
-
-  return <div>The API url is "{flags.config.apiUrl}"</div>;
-};
-```
-
 ### useFlag
 
-Returned as part of `createFlags()`. A React hook to return a single flag. Must be used in side of `FlagsProvider`.
+_Returned as part of `createFlags<T>()`._
 
-| Args      | Type       | Required | Description                     |
-| --------- | ---------- | -------- | ------------------------------- |
-| `keyPath` | `string[]` | `true`   | Must be a valid key path of `T` |
+A hook to fetch a single flag. Requires a valid key path and a default value. The key path must terminate at a string, boolean or number and the default value must be of the same type that it terminates. Forcing a default to be provided will minimize the change of a runtime error occurring.
+
+| Args           | Type                                         | Required | Description                                                |
+| -------------- | -------------------------------------------- | -------- | ---------------------------------------------------------- |
+| `keyPath`      | `Types.KeyPath<T> \| Types.KeyPathString<T>` | `true`   | A valid key path of `T` to a string, boolean or number     |
+| `defaultValue` | `GetValueFromKeyPath<T, KP>`                 | `true`   | A fallback in case it is not available in the `Backend<T>` |
 
 ```tsx
 // my-component.tsx
 
-import { useFlags } from "./flags";
+import { useFlag } from "./flags";
 
 const MyComponent = () => {
-  const apiUrl = useFlag(["config", "apiUrl"]);
+  /**
+   * The key path can be either an array or string of keys joined by `.`
+   * It _must_ terminate at a string, boolean or number type.
+   */
+  const apiUrl = useFlag(["config", "apiUrl"], "https://example.com");
+  const apiUrl2 = useFlag("config.apiUrl", "https://example.com");
 
   return <div>The API url is "{apiUrl}"</div>;
 };
 ```
 
-## Redux API
+### Flag
 
-### createFlagsReducer
+_Returned as part of `createFlags<T>()`._
 
-Returned as part of `createReduxBindings(...)`. Creates a reducer to be used in your Redux stores.
+Renders a some UI based on whether a flag is `false` or not. (It's a glorified if statement 😬).
 
-| Args    | Type | Required | Description                     |
-| ------- | ---- | -------- | ------------------------------- |
-| `flags` | `T`  | `true`   | The initial value of your flags |
-
-```tsx
-// reducer.ts
-
-import { combineReducers } from "redux";
-import { Computable } from "flag";
-import { createFlagsReducer, MyFlags } from "./flags";
-import { otherReducer } from "./other-reducer";
-
-const flags: Computable<MyFlags> = {
-  // ...
-};
-
-export default combineReducers({
-  // 👇 must use the "flags" key of your state
-  flags: createFlagsReducer(flags),
-  other: otherReducer,
-});
-```
-
-### getFlagsSelector
-
-A selector to retrieve _computed_ flags from Redux state. It is not enough to say `state.flags` because `createFlagsReducer` does not eagerly evaluate computable flags.
-(Though I suppose if you don't use any computable flags, then you don't necessarily need this 🤷‍♂️.)
+| Args           | Type                                         | Required | Description                                                |
+| -------------- | -------------------------------------------- | -------- | ---------------------------------------------------------- |
+| `keyPath`      | `Types.KeyPath<T> \| Types.KeyPathString<T>` | `true`   | A valid key path of `T` to a string, boolean or number     |
+| `defaultValue` | `GetValueFromKeyPath<T, KP>`                 | `true`   | A fallback in case it is not available in the `Backend<T>` |
+| `render`       | `(flags: T) => ReactNode`                    | `true`   | Function that returns a `ReactNode`                        |
+| `fallback`     | `() => ReactNode`                            | `false`  | Function that returns a `ReactNode`                        |
 
 ```tsx
-// reducer.ts
-
-import { getFlagsSelector, MyFlags } from "./flags";
-
-type State = {
-  flags: MyFlags;
-  // ...
-};
-
-// ...
-
-export const getFlags = (state: State) => getFlagsSelector(state);
+<Flag
+  name="features.useMyCoolNewThing"
+  defaultValue={false}
+  render={() => <div>Rendered on truthy</div>}
+  fallback={() => <div>Rendered on falsy</div>}
+/>
 ```
 
-### ConnectedFlagsProvider
-
-Returned as part of `createReduxBindings(...)`. Wraps `FlagsProvider`, fetching the flags from Redux state.
-
-```tsx
-import { Provider } from "redux";
-import { MyApplication } from "./app";
-import { ConnectedFlagsProvider } from "./flags";
-import { store } from "./store";
-
-const instance = (
-  <Provider store={store}>
-    <ConnectedFlagsProvider>
-      <MyApplication />
-    </ConnectedFlagsProvider>
-  </Provider>
-);
-
-React.render(instance, document.querySelector("#app"));
-```
-
-### setFlagsAction
-
-Returned as part of `createReduxBindings(...)`. A dispatchable action that sets flags. Merges a partial value of pre-computed flags with existing pre-computed flags.
-
-| Args    | Type            | Required | Description                |
-| ------- | --------------- | -------- | -------------------------- |
-| `flags` | `Computable<T>` | `true`   | Partial pre-computed flags |
-
-```tsx
-import { Thunk } from "redux-thunk";
-import { setFlagsAction } from "./flags";
-
-export const someThunk: Thunk<any> =
-  ({ dispatch }) =>
-  async () => {
-    const user = await fetchUser();
-
-    dispatch(setFlagsAction(user.flags));
-    // ...
-  };
-```
+## Backends
 
 ## Setting NODE_ENV
 
