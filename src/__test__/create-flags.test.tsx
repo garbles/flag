@@ -1,21 +1,16 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { createFlags } from "../create-flags";
-import { AbstractBackend, IAbstractBackend } from "../backends";
-import { GetValueFromKeyPath, KeyPaths } from "../types";
+import { AbstractBackend, AlwaysBackend, ComputedBackend, IAbstractBackend, NullBackend, StaticBackend } from "../backends";
 
 type Flags = {
   a: number;
   b: string;
-  c: boolean;
-  d: boolean;
   e: {
     f: {
       g: boolean;
     };
   };
-  h: boolean;
-  i: number;
 };
 
 const { useFlag, FlagBackendProvider } = createFlags<Flags>();
@@ -46,7 +41,7 @@ const silenceConsole = () => {
 };
 
 test("when the background always returns the same thing", () => {
-  const data: any = {
+  const data = {
     a: 0,
     b: "goodbye",
     e: {
@@ -56,32 +51,13 @@ test("when the background always returns the same thing", () => {
     },
   };
 
-  class StaticBackend extends AbstractBackend<Flags> {
-    getSnapshot(keys: any) {
-      const [first, ...rest] = keys;
-      let result: any = data[first];
-
-      for (const key of rest) {
-        result = result[key];
-      }
-
-      return result;
-    }
-  }
-
-  render(<App backend={new StaticBackend()} defaults={{ a: 0, b: "", g: false }} />);
+  render(<App backend={new StaticBackend(data)} defaults={{ a: 0, b: "", g: false }} />);
 
   expect(getData()).toEqual({ a: 0, b: "goodbye", g: true });
 });
 
 test("works with a backend that does nothing", () => {
   const defaults = { a: 1, b: "hello", g: false };
-
-  class NullBackend extends AbstractBackend<Flags> {
-    getSnapshot<KP extends KeyPaths<Flags>, T extends GetValueFromKeyPath<Flags, KP>>(key: KP, defaultValue: T): T {
-      return defaultValue;
-    }
-  }
 
   render(<App backend={new NullBackend()} defaults={defaults} />);
 
@@ -100,12 +76,6 @@ test("throws with a context", () => {
 
 test("throws when you don't provide a default value", () => {
   const restore = silenceConsole();
-
-  class NullBackend extends AbstractBackend<Flags> {
-    getSnapshot<KP extends KeyPaths<Flags>, T extends GetValueFromKeyPath<Flags, KP>>(key: KP, defaultValue: T): T {
-      return defaultValue;
-    }
-  }
 
   expect(() =>
     render(
@@ -148,4 +118,94 @@ test("returns the default value if the return type doesn't match the default val
   render(<App backend={new WhoopsieBackend()} defaults={{ a: 4, b: "", g: false }} />);
 
   expect(getData()).toEqual({ a: 4, b: "whoopsie", g: false });
+});
+
+test("suspends when using an async ref", async () => {
+  class SomeAsyncBackend extends AbstractBackend<Flags> {
+    flags = this.createAsyncRef<Flags>();
+
+    getSnapshot(keyPath: string[]) {
+      let result: any = this.flags.current;
+
+      for (const key of keyPath) {
+        result = result[key];
+      }
+
+      return result;
+    }
+  }
+
+  const backend = new SomeAsyncBackend();
+
+  render(
+    <React.Suspense fallback={<div role="main">{'{ "fallback": true }'}</div>}>
+      <App backend={backend} defaults={{ a: 4, b: "", g: false }} />
+    </React.Suspense>
+  );
+
+  expect(getData()).toEqual({ fallback: true });
+
+  await act(async () => {
+    backend.flags.current = { a: 600, b: "async", e: { f: { g: true } } };
+
+    /**
+     * This is a hack to force the suspense to re-render
+     * before the act finishes.
+     */
+    await new Promise((res) => setTimeout(res, 0));
+  });
+
+  expect(getData()).toEqual({ a: 600, b: "async", g: true });
+});
+
+test("can compute the value of a flag", async () => {
+  let a = 2;
+
+  const backend = new ComputedBackend<Flags>({
+    a: () => a,
+    b: "goodbye",
+    e: {
+      f: {
+        g: (root) => root.a > 0 && root.b === "goodbye",
+      },
+    },
+  });
+
+  render(<App backend={backend} defaults={{ a: 4, b: "", g: false }} />);
+
+  expect(getData()).toEqual({ a: 2, b: "goodbye", g: true });
+
+  await act(async () => {
+    a = 0;
+    backend.notify();
+    /**
+     * This is a hack to force the suspense to re-render
+     * before the act finishes.
+     */
+    await new Promise((res) => setTimeout(res, 0));
+  });
+
+  expect(getData()).toEqual({ a: 0, b: "goodbye", g: false });
+});
+
+test("can always return the same value", () => {
+  const backend = new AlwaysBackend({
+    boolean: true,
+    number: 42,
+    string: "hello",
+  });
+
+  render(<App backend={backend} defaults={{ a: 4, b: "", g: false }} />);
+
+  expect(getData()).toEqual({ a: 42, b: "hello", g: true });
+});
+
+test("will fallback to defaults when an always value is not provided", () => {
+  const backend = new AlwaysBackend({
+    boolean: true,
+  });
+
+  render(<App backend={backend} defaults={{ a: 400, b: "default", g: false }} />);
+
+  expect(getData()).toEqual({ a: 400, b: "default", g: true });
 });

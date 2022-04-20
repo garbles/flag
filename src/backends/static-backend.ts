@@ -2,8 +2,11 @@ import { AbstractBackend } from "./abstract-backend";
 import { GetValueFromKeyPath, KeyPaths } from "../types";
 
 export class StaticBackend<F> extends AbstractBackend<F> {
-  constructor(private data: Partial<F>) {
+  #data: Partial<F>;
+
+  constructor(data: Partial<F>) {
     super();
+    this.#data = data;
   }
 
   getSnapshot<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T {
@@ -11,7 +14,7 @@ export class StaticBackend<F> extends AbstractBackend<F> {
       return defaultValue;
     }
 
-    let result: any = this.data;
+    let result: any = this.#data;
 
     for (const key of keyPath as string[]) {
       result = result[key];

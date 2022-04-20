@@ -4,6 +4,7 @@ import { GetValueFromKeyPath, KeyPaths, Subscriber, Unsubscribe, ExternalStore, 
 export interface IAbstractBackend<F> {
   name: string;
   getSnapshot<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T;
+  getServerSnapshot<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T;
   toExternalStore<KP extends KeyPaths<F>, T extends GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): ExternalStore<T>;
 }
 
