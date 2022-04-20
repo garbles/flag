@@ -1,5 +1,7 @@
 # Flag
 
+:caution: v5 is a work in progress and is not yet published. :caution:
+
 This library aims to offer a best-in-class interface for working with feature flags in TypeScript-based React applications.
 
 ```
