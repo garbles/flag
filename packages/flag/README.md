@@ -208,7 +208,7 @@ root.render(
 
 ### `AlwaysBackend`
 
-Given a mapping of `{ boolean: boolean; string: string; number: number; }` will always yield the mapping value for a given type. Useful for testing.
+Given a partial mapping of `{ boolean: boolean; string: string; number: number; }` will always yield the mapping value for a given type. If a type is missing from the mapping, it will fallback to the default value given to `useFlag`. Useful for testing.
 
 ```tsx
 import React from "react";
@@ -256,7 +256,7 @@ root.render(
 
 ### Rolling your own with `AbstractBackend<T>`
 
-You can roll your own backend by extending a class off of `AbstractBackend<T>`. You need only implement the `getSnapshot()` method.
+You can roll your own backend by extending a class off of `AbstractBackend<T>`. You need only implement the `getSnapshot()` (and optionally `getServerSnapshot()`) method.
 
 ```tsx
 import { AbstractBackend, Types } from "flag";
@@ -278,7 +278,7 @@ export class MyBackend<F> extends AbstractBackend<F> {
 
   /**
    * OPTIONAL: you can override `getServerSnapshot` if you need different behavior for server rendering.
-   * This defaults to `getSnapshot`
+   * Defaults to `getSnapshot`.
    */
   override getServerSnapshot<KP extends Types.KeyPath<F>, T extends Types.GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T {
     /**
@@ -309,7 +309,7 @@ export class MyBackend<F> extends AbstractBackend<F> {
 
   getSnapshot<KP extends Types.KeyPath<F>, T extends Types.GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T {
     /**
-     * Throws a promise if not value is present.
+     * Throws a promise if a current value has not yet been assigned.
      */
     const data = this.#data.current;
 
