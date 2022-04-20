@@ -1,61 +1,19 @@
 # Flag
 
-_Feature flagging made easy for React and Redux_
+This library aims to offer a best-in-class interface for working with feature flags in TypeScript-based React applications.
 
 ```
-yarn add flag
-```
-
-## Motivation
-
-Feature flagging is necessary for large client-side applications. They improve development speed
-and allow teams to test new features before they are stable. In order to **WANT** to use feature
-flags in an application, they should be **VERY** easy to add and remove. That means minimal
-boiler plate and no need to pass boolean props down through component hierarchy. Such a thing could be
-done with global variables; however, they live outside of the React/Redux lifecycle, making them
-more difficult to control. Instead, this library injects and then accesses feature flags directly
-from the React context without getting in your way.
-
-Flag allows you to declare flags as either plain values or as functions. If a flag is a function then it is referred to as a computed flag. The function accepts one argument which is the flags object itself. You do not have to use computed flags, but they can be very convenient. For example,
-
-```ts
-const flags = {
-  // properties can be nested objects
-  features: {
-    // they can be boolean
-    useMyCoolNewThing: true
-  },
-  config: {
-    // they can be strings
-    apiUrl: "www.example.com/api"
-  },
-  // they can be numbers
-  cool: 1,
-  dude: 5,
-  // they can be computed
-  coolAndDude: flags => flags.cool + flags.dude,
-  // they can be computed from other computed properties.
-  // other computed properties are resolved for you, so that you do not
-  // need to call it as a function.
-  largeCoolAndDude: flags => flags.coolAndDude > 10
-};
+npm install flag
 ```
 
 ## Getting Started
 
-This library has strong TypeScript support as of v4. In order to get that support, you must
-initialize the `flag` library before using it.
-
-### createFlags
-
-Creates React bindings for flags. **You should only initialize one instance of this API**. Does
-not take any value arguments, but takes one type argument `T` which is the shape of your resolved
-flags.
+`flag` works by creating bindings at runtime so that context providers, components, and hooks are all strictly typed together. `createFlags` builds these bindings without requiring an data.
 
 ```ts
 // flags.ts
 
-import createFlags from "flag";
+import { createFlags } from "flag";
 
 export type MyFlags = {
   features: {
@@ -70,73 +28,18 @@ export type MyFlags = {
   largeCoolAndDude: boolean;
 };
 
-const { FlagsProvider, Flag, useFlag, useFlags } = createFlags<MyFlags>();
-
-export { FlagsProvider, Flag, useFlag, useFlags };
-```
-
-### createReduxBindings
-
-You can also add support for Redux by importing `createReduxBindings` from `flag/redux`.
-
-| Args       | Type               | Required | Description                       |
-| ---------- | ------------------ | -------- | --------------------------------- |
-| `provider` | `FlagsProvider<T>` | `true`   | Provider created by `createFlags` |
-
-```ts
-// flags.ts
-
-// ... the above
-
-import createReduxBindings from "flag/redux";
-
-const {
-  setFlagsAction,
-  getFlagsSelector,
-  createFlagsReducer,
-  ConnectedFlagsProvider
-} = createReduxBindings(FlagsProvider);
-
-export {
-  setFlagsAction,
-  getFlagsSelector,
-  createFlagsReducer,
-  ConnectedFlagsProvider
-};
+export const { FlagBackendProvider, Flag, useFlag } = createFlags<MyFlags>();
 ```
 
 ## React API
 
-For brevity, the type `T` in the section below refers to the shape of your resolved feature flags.
+### FlagBackendProvider
 
-### Computable
-
-Generic type used to describe unresolved flags. Very useful when including functions are part of your flag definitions because function arguments can be inferred.
-
-```tsx
-import { Computable } from "flag";
-
-type MyFlags = {
-  a: boolean;
-  b: boolean;
-  c: boolean;
-};
-
-const flags: Computable<MyFlags> = {
-  a: true,
-  b: false,
-  // 👇 `flags` type checks!
-  c: flags => flags.a && flags.b
-};
-```
-
-### FlagsProvider
-
-Returned as part of `createFlags()`. React component that makes flags available to children through the Context API.
+Returned as part of `createFlags<T>()`. This React component expects to receive a `Backend` that returns flags of type `T`.
 
 | Props      | Type            | Required | Description            |
 | ---------- | --------------- | -------- | ---------------------- |
-| `flags`    | `Computable<T>` | `true`   | All pre-computed flags |
+| `backend`  | `Computable<T>` | `true`   | All pre-computed flags |
 | `children` | `ReactNode`     | `true`   | React children         |
 
 ```tsx
@@ -248,7 +151,7 @@ const flags: Computable<MyFlags> = {
 export default combineReducers({
   // 👇 must use the "flags" key of your state
   flags: createFlagsReducer(flags),
-  other: otherReducer
+  other: otherReducer,
 });
 ```
 
@@ -305,13 +208,17 @@ Returned as part of `createReduxBindings(...)`. A dispatchable action that sets 
 import { Thunk } from "redux-thunk";
 import { setFlagsAction } from "./flags";
 
-export const someThunk: Thunk<any> = ({ dispatch }) => async () => {
-  const user = await fetchUser();
+export const someThunk: Thunk<any> =
+  ({ dispatch }) =>
+  async () => {
+    const user = await fetchUser();
 
-  dispatch(setFlagsAction(user.flags));
-  // ...
-};
+    dispatch(setFlagsAction(user.flags));
+    // ...
+  };
 ```
+
+## Setting NODE_ENV
 
 ## License
 

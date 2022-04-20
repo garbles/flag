@@ -1,8 +1,8 @@
 /// <reference types="react/next" />
 
 import React from "react";
-import { Flags, FlagScalar, GetValueFromKeyPath, KeyPaths, ShallowKeys } from "./types";
-import { IAbstractBackend } from "./backends";
+import { Flags, FlagScalar, GetValueFromKeyPath, GetValueFromKeyPathString, KeyPaths, KeyPathStrings, ShallowKeys } from "./types";
+import { Backend } from "./backends";
 
 const MISSING_CONTEXT = Symbol();
 const NOOP = () => null;
@@ -12,16 +12,16 @@ const isFlagScalar = (value: any): value is FlagScalar => {
 };
 
 export const createFlags = <F extends Flags>() => {
-  type B = IAbstractBackend<Flags>;
+  type B = Backend<F>;
 
   type ProviderProps = React.PropsWithChildren<{
     backend: B;
   }>;
 
-  type ShallowFlagProps<K extends ShallowKeys<F>> = {
+  type KeyPathStringFlagProps<K extends KeyPathStrings<F>> = {
     keyPath: K;
-    defaultValue: F[K];
-    render(value: F[K]): React.ReactNode;
+    defaultValue: GetValueFromKeyPathString<F, K>;
+    render(value: GetValueFromKeyPathString<F, K>): React.ReactNode;
     fallback?(): React.ReactNode;
   };
 
@@ -49,7 +49,7 @@ export const createFlags = <F extends Flags>() => {
   };
 
   const internalUseFlag = (keyPath: string | string[], defaultValue: any, displayCallee: () => string) => {
-    const keyPath_ = (Array.isArray(keyPath) ? keyPath : [keyPath]) as KeyPaths<F>;
+    const keyPath_ = (Array.isArray(keyPath) ? keyPath : keyPath.split(".")) as KeyPaths<F>;
 
     if (defaultValue === undefined) {
       throw new Error(`Calling \`${displayCallee()}\` requires that you provide a default value that matches the type of the flag.`);
@@ -60,6 +60,10 @@ export const createFlags = <F extends Flags>() => {
     const backend = React.useContext(Context);
 
     if (backend === MISSING_CONTEXT) {
+      if (process.env.NODE_ENV !== "development") {
+        return defaultValue;
+      }
+
       throw new Error(`Calling \`${displayCallee()}\` requires that the application is wrapped in a \`<FlagsProvider />\``);
     }
 
@@ -95,7 +99,7 @@ export const createFlags = <F extends Flags>() => {
     return result;
   };
 
-  function Flag<K extends ShallowKeys<F>>(props: ShallowFlagProps<K>): JSX.Element;
+  function Flag<K extends KeyPathStrings<F>>(props: KeyPathStringFlagProps<K>): JSX.Element;
   function Flag<KP extends KeyPaths<F>>(props: KeyPathFlagProps<KP>): JSX.Element;
   function Flag({ keyPath, defaultValue, render, fallback }: any): JSX.Element {
     fallback ??= NOOP;
@@ -105,7 +109,7 @@ export const createFlags = <F extends Flags>() => {
     return flag === false ? fallback() : render(flag);
   }
 
-  function useFlag<K extends ShallowKeys<F>>(keyPath: K, defaultValue: F[K]): F[K];
+  function useFlag<K extends KeyPathStrings<F>>(keyPath: K, defaultValue: GetValueFromKeyPathString<F, K>): GetValueFromKeyPathString<F, K>;
   function useFlag<KP extends KeyPaths<F>>(keyPath: KP, defaultValue: GetValueFromKeyPath<F, KP>): GetValueFromKeyPath<F, KP>;
   function useFlag(keyPath: any, defaultValue: any) {
     return internalUseFlag(keyPath, defaultValue, calleeStr(keyPath, defaultValue, "hook"));

@@ -1,7 +1,7 @@
 import React from "react";
 import { act, render, screen } from "@testing-library/react";
 import { createFlags } from "../create-flags";
-import { AbstractBackend, AlwaysBackend, ComputedBackend, IAbstractBackend, NullBackend, StaticBackend } from "../backends";
+import { AbstractBackend, AlwaysBackend, ComputedBackend, Backend, NullBackend, StaticBackend } from "../backends";
 
 type Flags = {
   a: number;
@@ -18,12 +18,12 @@ const { useFlag, FlagBackendProvider } = createFlags<Flags>();
 const AppWithoutContext = (props: { a: number; b: string; g: boolean }) => {
   const a = useFlag("a", props.a);
   const b = useFlag(["b"], props.b);
-  const g = useFlag(["e", "f", "g"], props.g);
+  const g = useFlag("e.f.g", props.g);
 
   return <div role="main">{JSON.stringify({ a, b, g })}</div>;
 };
 
-const App = (props: { backend: IAbstractBackend<Flags>; defaults: { a: number; b: string; g: boolean } }) => {
+const App = (props: { backend: Backend<Flags>; defaults: { a: number; b: string; g: boolean } }) => {
   const defaults = props.defaults ?? {};
 
   return (
@@ -64,12 +64,25 @@ test("works with a backend that does nothing", () => {
   expect(getData()).toEqual(defaults);
 });
 
-test("throws with a context", () => {
+test("throws without a context in development", () => {
   const restore = silenceConsole();
+
+  const NODE_ENV = process.env.NODE_ENV;
+  process.env.NODE_ENV = "development";
 
   expect(() => render(<AppWithoutContext {...{ a: 2, b: "", g: false }} />)).toThrowError(
     new Error('Calling `useFlag("a", 2)` requires that the application is wrapped in a `<FlagsProvider />`')
   );
+
+  process.env.NODE_ENV = NODE_ENV;
+
+  restore();
+});
+
+test("does not throw without context in test mode", () => {
+  const restore = silenceConsole();
+
+  expect(() => render(<AppWithoutContext {...{ a: 2, b: "", g: false }} />)).not.toThrowError();
 
   restore();
 });

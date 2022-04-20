@@ -1,8 +1,8 @@
 import React from "react";
 import { createFlags } from "../create-flags";
-import { KeyPaths, ShallowKeys } from "../types";
+import { KeyPaths, ShallowKeys, GetValueFromKeyPathString, KeyPathStrings } from "../types";
 
-type Something = {
+type Flags = {
   a: boolean;
   b: {
     c: {
@@ -13,8 +13,9 @@ type Something = {
   f: number;
 };
 
-type Keys = KeyPaths<Something>;
-type Shallow = ShallowKeys<Something>;
+type Keys = KeyPaths<Flags>;
+type StringKeys = KeyPathStrings<Flags>;
+type Shallow = ShallowKeys<Flags>;
 
 it("check key paths", () => {
   const a: Keys = ["a"];
@@ -25,8 +26,33 @@ it("check key paths", () => {
   const c: Keys = ["b", "c"];
 
   const d: Keys = ["b", "c", "d"];
-  const e: Keys = ["b", "c", "d"];
+  const e: Keys = ["b", "c", "e"];
   const f: Keys = ["f"];
+});
+
+it("check key path string", () => {
+  const a: StringKeys = "a";
+
+  // @ts-expect-error
+  const b: StringKeys = "b";
+  // @ts-expect-error
+  const c: StringKeys = "b.c";
+
+  const d: StringKeys = "b.c.d";
+  const e: StringKeys = "b.c.e";
+  const f: StringKeys = "f";
+});
+
+it("gets type back from string key", () => {
+  const a: GetValueFromKeyPathString<Flags, "a"> = true;
+  const d: GetValueFromKeyPathString<Flags, "b.c.d"> = true;
+  const e: GetValueFromKeyPathString<Flags, "b.c.e"> = "hello";
+
+  // @ts-expect-error
+  const f: GetValueFromKeyPathString<Flags, "f"> = "hello";
+
+  // @ts-expect-error
+  type Z = GetValueFromKeyPathString<Flags, "x.y.z">;
 });
 
 it("check shallow keys", () => {
@@ -39,12 +65,11 @@ it("check shallow keys", () => {
 });
 
 it("useFlag", () => {
-  const { useFlag } = createFlags<Something>();
+  const { useFlag } = createFlags<Flags>();
 
   function App() {
-    useFlag("a", false);
-
-    useFlag(["a"], false);
+    const a: boolean = useFlag("a", false);
+    const aa: boolean = useFlag(["a"], false);
 
     // @ts-expect-error
     useFlag(["a"], "haha");
@@ -64,7 +89,7 @@ it("useFlag", () => {
     // @ts-expect-error
     useFlag(["b", "c", "e"], true);
 
-    useFlag(["b", "c", "e"], "haha");
+    const e: string = useFlag("b.c.e", "haha");
 
     useFlag("f", 123);
 
@@ -73,7 +98,7 @@ it("useFlag", () => {
 });
 
 it("Flag", () => {
-  const { Flag } = createFlags<Something>();
+  const { Flag } = createFlags<Flags>();
 
   <Flag keyPath={["a"]} defaultValue={false} render={(a) => <div>{a === true}</div>} />;
 
