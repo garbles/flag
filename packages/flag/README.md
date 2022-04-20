@@ -316,6 +316,8 @@ export class MyBackend<F> extends AbstractBackend<F> {
 }
 ```
 
+If your backend is asynchronous and you do not want to use suspense, you can imperatively call `this.notify()` in order to tell React to re-render.
+
 ## Setting NODE_ENV
 
 While in development, you should be sure to set `process.env.NODE_ENV` to `"development"` for useful warnings when possible. Tool kits like Remix, Next and CRA do this automatically for you.
