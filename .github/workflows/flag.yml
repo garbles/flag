@@ -1,0 +1,13 @@
+name: "flag"
+
+on:
+  push:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: yarn install --frozen-lockfile
+      - run: cd packages/flag && yarn prepublishOnly

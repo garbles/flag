@@ -1,0 +1,41 @@
+{
+  "name": "async-ref",
+  "description": "Async ref objects for React. A tiny bridge between React.useSyncExternalStore and React.Suspense.",
+  "version": "0.1.6",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Gabe Scholz <github@gabe.pizza>",
+  "license": "MIT",
+  "homepage": "https://github.com/garbles/async-ref",
+  "keywords": [
+    "react",
+    "suspense",
+    "ref",
+    "useRef",
+    "async",
+    "promise",
+    "await"
+  ],
+  "files": [
+    "dist",
+    "src/index.ts",
+    "src/async-ref.ts"
+  ],
+  "devDependencies": {
+    "@testing-library/react": "^13.0.0",
+    "@types/jest": "^27.4.1",
+    "@types/react": "^18.0.1",
+    "jest": "^27.5.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "ts-jest": "^27.1.4",
+    "tsup": "^5.12.4",
+    "typescript": "^4.6.3"
+  },
+  "scripts": {
+    "test": "jest",
+    "build": "tsup",
+    "prepublishOnly": "jest && tsc && tsup"
+  }
+}
