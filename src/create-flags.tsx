@@ -1,7 +1,7 @@
 /// <reference types="react/next" />
 
 import React from "react";
-import { Flags, FlagScalar, GetValueFromKeyPath, GetValueFromKeyPathString, KeyPaths, KeyPathStrings, ShallowKeys } from "./types";
+import { Flags, FlagScalar, GetValueFromKeyPath, GetValueFromKeyPathString, KeyPaths, KeyPathStrings } from "./types";
 import { Backend } from "./backends";
 
 const MISSING_CONTEXT = Symbol();

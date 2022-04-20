@@ -20,10 +20,6 @@ export type KeyPaths<T> = {
 
 export type KeyPathStrings<T> = Join<KeyPaths<T>>;
 
-export type ShallowKeys<T> = {
-  [Key in keyof T & string]: T[Key] extends object ? never : Key;
-}[keyof T & string];
-
 export type Subscriber = () => void;
 export type Unsubscribe = () => void;
 export type Notifier = () => void;

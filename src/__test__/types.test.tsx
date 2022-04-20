@@ -1,6 +1,6 @@
 import React from "react";
 import { createFlags } from "../create-flags";
-import { KeyPaths, ShallowKeys, GetValueFromKeyPathString, KeyPathStrings } from "../types";
+import { KeyPaths, GetValueFromKeyPathString, KeyPathStrings } from "../types";
 
 type Flags = {
   a: boolean;
@@ -15,7 +15,6 @@ type Flags = {
 
 type Keys = KeyPaths<Flags>;
 type StringKeys = KeyPathStrings<Flags>;
-type Shallow = ShallowKeys<Flags>;
 
 it("check key paths", () => {
   const a: Keys = ["a"];
@@ -53,15 +52,6 @@ it("gets type back from string key", () => {
 
   // @ts-expect-error
   type Z = GetValueFromKeyPathString<Flags, "x.y.z">;
-});
-
-it("check shallow keys", () => {
-  const a: Shallow = "a";
-
-  // @ts-expect-error
-  const b: Shallow = "b";
-
-  const f: Shallow = "f";
 });
 
 it("useFlag", () => {
