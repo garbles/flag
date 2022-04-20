@@ -1,7 +1,5 @@
 # Flag
 
-🥌 `5.0.0` is a work in progress and is only published under `5.0.0-alpha.0`. 🥌
-
 This library aims to offer a best-in-class interface for working with feature flags in TypeScript-based React applications.
 
 ```

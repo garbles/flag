@@ -1,6 +1,6 @@
 {
   "name": "flag",
-  "version": "5.0.0-alpha.0",
+  "version": "5.0.0",
   "description": "Strictly typed feature flagging for React",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
