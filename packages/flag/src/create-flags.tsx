@@ -47,6 +47,7 @@ export const createFlags = <F extends Flags>() => {
   const FlagBackendProvider: React.FC<ProviderProps> = ({ backend, children }) => {
     return <Context.Provider value={backend}>{children}</Context.Provider>;
   };
+  FlagBackendProvider.displayName = "FlagBackendProvider";
 
   const internalUseFlag = (keyPath: string | string[], defaultValue: any, displayCallee: () => string) => {
     const keyPath_ = (Array.isArray(keyPath) ? keyPath : keyPath.split(".")) as KeyPath<F>;
@@ -64,7 +65,7 @@ export const createFlags = <F extends Flags>() => {
         return defaultValue;
       }
 
-      throw new Error(`Calling \`${displayCallee()}\` requires that the application is wrapped in a \`<FlagsProvider />\``);
+      throw new Error(`Calling \`${displayCallee()}\` requires that the application is wrapped in a \`<FlagBackendProvider />\``);
     }
 
     const ext = backend.toExternalStore(keyPath_, defaultValue);
@@ -108,10 +109,12 @@ export const createFlags = <F extends Flags>() => {
 
     return flag === false ? fallback() : render(flag);
   }
+  Flag.displayName = "Flag";
 
   function useFlag<K extends KeyPathString<F>>(keyPath: K, defaultValue: GetValueFromKeyPathString<F, K>): GetValueFromKeyPathString<F, K>;
   function useFlag<KP extends KeyPath<F>>(keyPath: KP, defaultValue: GetValueFromKeyPath<F, KP>): GetValueFromKeyPath<F, KP>;
   function useFlag(keyPath: any, defaultValue: any) {
+    React.useDebugValue(keyPath);
     return internalUseFlag(keyPath, defaultValue, calleeStr(keyPath, defaultValue, "hook"));
   }
 
