@@ -5,6 +5,11 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "!src/__test__"
+  ],
   "sideEffects": false,
   "repository": "https://github.com/garbles/flag",
   "author": "Gabe Scholz",

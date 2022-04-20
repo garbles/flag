@@ -19,8 +19,8 @@
   ],
   "files": [
     "dist",
-    "src/index.ts",
-    "src/async-ref.ts"
+    "src",
+    "!src/__test__"
   ],
   "devDependencies": {
     "@testing-library/react": "^13.0.0",
