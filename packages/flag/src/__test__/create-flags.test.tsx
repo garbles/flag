@@ -71,7 +71,7 @@ test("throws without a context in development", () => {
   process.env.NODE_ENV = "development";
 
   expect(() => render(<AppWithoutContext {...{ a: 2, b: "", g: false }} />)).toThrowError(
-    new Error('Calling `useFlag("a", 2)` requires that the application is wrapped in a `<FlagsProvider />`')
+    new Error('Calling `useFlag("a", 2)` requires that the application is wrapped in a `<FlagBackendProvider />`')
   );
 
   process.env.NODE_ENV = NODE_ENV;
