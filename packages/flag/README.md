@@ -39,12 +39,12 @@ export const { FlagBackendProvider, Flag, useFlag } = createFlags<MyFlags>();
 
 _Returned as part of `createFlags<T>()`._
 
-This React component provides a `Backend<T>` (see below) as a data source for `Flag` and `useFlag`.
+This React component provides a `Backend<T>` ([see below](https://github.com/garbles/flag/tree/master/packages/flag#backends)) as a data source for `Flag` and `useFlag`.
 
-| Props      | Type               | Required | Description            |
-| ---------- | ------------------ | -------- | ---------------------- |
-| `backend`  | `Types.Backend<T>` | `true`   | All pre-computed flags |
-| `children` | `ReactNode`        | `true`   | React children         |
+| Props      | Type               | Required | Description               |
+| ---------- | ------------------ | -------- | ------------------------- |
+| `backend`  | `Types.Backend<T>` | `true`   | The data source for flags |
+| `children` | `ReactNode`        | `true`   | React children            |
 
 ```tsx
 // index.tsx
