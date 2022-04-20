@@ -4,7 +4,7 @@
 
 import React, { Suspense } from "react";
 import { act, render, screen } from "@testing-library/react";
-import { createAsyncRef } from "./async-ref";
+import { createAsyncRef } from "../async-ref";
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
   state = { hasError: false };

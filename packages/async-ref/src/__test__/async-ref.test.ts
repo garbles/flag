@@ -1,4 +1,4 @@
-import { createAsyncRef } from "./async-ref";
+import { createAsyncRef } from "../async-ref";
 
 test("throws a promise when unresolved", () => {
   expect.assertions(1);
