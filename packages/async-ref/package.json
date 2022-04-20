@@ -6,7 +6,7 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Gabe Scholz <github@gabe.pizza>",
-  "license": "MIT",
+  "license": "MPL-2.0",
   "homepage": "https://github.com/garbles/async-ref",
   "keywords": [
     "react",
