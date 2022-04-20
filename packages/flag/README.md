@@ -318,6 +318,35 @@ export class MyBackend<F> extends AbstractBackend<F> {
 
 If your backend is asynchronous and you do not want to use suspense, you can imperatively call `this.notify()` in order to tell React to re-render.
 
+```tsx
+import { AbstractBackend, Types } from "flag";
+
+export class MyBackend<F> extends AbstractBackend<F> {
+  #data: T | null = null;
+
+  constructor() {
+    this.#data = this.createAsyncRef();
+
+    fetch("/api-with-data")
+      .then((res) => res.json())
+      .then((data) => {
+        this.#data = data;
+        this.notify();
+      });
+  }
+
+  getSnapshot<KP extends Types.KeyPath<F>, T extends Types.GetValueFromKeyPath<F, KP>>(keyPath: KP, defaultValue: T): T {
+    if (this.#data === null) {
+      return defaultValue;
+    }
+
+    const data = this.#data;
+
+    return someGetterFn(data, keyPath);
+  }
+}
+```
+
 ## Setting NODE_ENV
 
 While in development, you should be sure to set `process.env.NODE_ENV` to `"development"` for useful warnings when possible. Tool kits like Remix, Next and CRA do this automatically for you.
