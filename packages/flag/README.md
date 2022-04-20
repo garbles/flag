@@ -118,7 +118,9 @@ Renders a some UI based on whether a flag is `false` or not. (It's a glorified i
 
 ## Backends
 
-`FlagBackendProvider` requires that you pass a `Backend<T>` which is responsible for retreiving flags to your application. `flag` bundles with several useful backends, but you can also roll your own.
+`FlagBackendProvider` requires that you pass a `Backend<T>` which is responsible for retreiving flags to your application.
+
+`flag` bundles with several useful backends, but you can also roll your own.
 
 ### `StaticBackend<T>`
 
